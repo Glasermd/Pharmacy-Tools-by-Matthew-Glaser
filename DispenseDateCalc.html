@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispense Date Calculator</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #334155;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            min-height: 95vh;
+        }
+
+        .container {
+            max-width: 650px;
+            width: 100%;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            flex-grow: 1;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 24px;
+            color: #0f172a;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 12px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input[type="date"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 8px 0;
+        }
+
+        .radio-group label {
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .results {
+            margin-top: 12px;
+        }
+
+        .result-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+        }
+        
+        .result-card.highlight {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .result-header {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #0f172a;
+        }
+
+        .result-output {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .result-text {
+            flex-grow: 1;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.9rem;
+            background: white;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            word-break: break-word;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        button.copy-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+
+        button.copy-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button.copy-btn.copied {
+            background-color: #16a34a;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #64748b;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .credits {
+            text-align: center;
+            margin-top: 30px;
+            color: #64748b;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        
+        .credits strong {
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Dispense Date Calculator</h1>
+    
+    <div class="form-row">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="lastDate">Last Dispensed Date:</label>
+            <input type="date" id="lastDate">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="customSupply">Custom Days of Supply:</label>
+            <input type="number" id="customSupply" value="15" min="1" placeholder="e.g. 15, 21, 45">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Allow Early Refill:</label>
+        <div class="radio-group">
+            <label><input type="radio" name="earlyDays" value="1" checked> 1 Day Early</label>
+            <label><input type="radio" name="earlyDays" value="2"> 2 Days Early</label>
+            <label><input type="radio" name="earlyDays" value="3"> 3 Days Early</label>
+            <label><input type="radio" name="earlyDays" value="4"> 4 Days Early</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Output Verbiage:</label>
+        <div class="radio-group">
+            <label><input type="radio" name="verbiage" value="ok" checked> Ok to dispense</label>
+            <label><input type="radio" name="verbiage" value="dnd"> Updated DND before to</label>
+        </div>
+    </div>
+
+    <div id="results" class="results">
+        <div class="empty-state">Please select a "Last Dispensed Date" to calculate annotations.</div>
+    </div>
+</div>
+
+<div class="credits">
+    <strong>Designed by Matt Glaser</strong><br>
+    Intended to standardize dispense date calculations and documentation.
+</div>
+
+<script>
+    // Format date as MM/DD/YY (or M/D/YY to match the original spreadsheet style)
+    function formatDate(date, padZero = true) {
+        const m = padZero ? String(date.getMonth() + 1).padStart(2, '0') : date.getMonth() + 1;
+        const d = padZero ? String(date.getDate()).padStart(2, '0') : date.getDate();
+        const y = String(date.getFullYear()).slice(-2);
+        return `${m}/${d}/${y}`;
+    }
+
+    // Function to calculate and render the results
+    function calculateDates() {
+        const dateInput = document.getElementById('lastDate').value;
+        const earlyDays = parseInt(document.querySelector('input[name="earlyDays"]:checked').value, 10);
+        const verbiageSelection = document.querySelector('input[name="verbiage"]:checked').value;
+        const customSupply = parseInt(document.getElementById('customSupply').value, 10);
+        const resultsDiv = document.getElementById('results');
+
+        if (!dateInput) {
+            resultsDiv.innerHTML = '<div class="empty-state">Please select a "Last Dispensed Date" to calculate annotations.</div>';
+            return;
+        }
+
+        // Properly parse date string YYYY-MM-DD avoiding timezone offset issues
+        const [year, month, day] = dateInput.split('-').map(Number);
+        const baseDate = new Date(year, month - 1, day);
+
+        // Calculate days between last dispensed date and TODAY (counting day dispensed)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to midnight for accurate day math
+        const diffTime = today.getTime() - baseDate.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to count the day dispensed
+
+        resultsDiv.innerHTML = ''; // Clear prior results
+
+        // 1. Build HTML for the "Days Between" tracker at the top
+        // Replaced \t with a single space
+        const trackerString = `Last Dispensed Date: ${formatDate(baseDate, false)} = ${diffDays} Days between last Dispensed and today counting day dispensed`;
+        
+        const topCard = document.createElement('div');
+        topCard.className = 'result-card highlight';
+        topCard.innerHTML = `
+            <div class="result-header">Days Since Last Dispensed</div>
+            <div class="result-output">
+                <p class="result-text">${trackerString}</p>
+                <button class="copy-btn" onclick="copyText(this, \`${trackerString}\`)">Copy</button>
+            </div>
+        `;
+        resultsDiv.appendChild(topCard);
+
+        // Required supplies plus custom
+        const supplyOptions = [30, 60, 90];
+        if (!isNaN(customSupply) && customSupply > 0 && !supplyOptions.includes(customSupply)) {
+            supplyOptions.push(customSupply);
+        }
+
+        // Determine the text snippet based on verbiage selection
+        const verbiageText = verbiageSelection === 'ok' 
+            ? ', ok to dispense ' 
+            : ' updated DND before to ';
+
+        // 2. Build HTML for each supply requirement
+        supplyOptions.forEach(supply => {
+            // Next Date = Base Date + Supply - Counting Day (1) - Early Days
+            const daysToAdd = supply - 1 - earlyDays; 
+            
+            const nextDate = new Date(baseDate);
+            nextDate.setDate(nextDate.getDate() + daysToAdd);
+
+            const annotationString = `Last Dispensed Date ${formatDate(baseDate)} x ${supply} days, counting day dispensed and allowing for ${earlyDays} day early refill${verbiageText}${formatDate(nextDate)}`;
+
+            // Build HTML for this result
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            
+            const headerStr = supply === customSupply ? `Custom Supply (${supply} Days)` : `${supply} Days Supply`;
+            
+            card.innerHTML = `
+                <div class="result-header">${headerStr}</div>
+                <div class="result-output">
+                    <p class="result-text">${annotationString}</p>
+                    <button class="copy-btn" onclick="copyText(this, \`${annotationString}\`)">Copy</button>
+                </div>
+            `;
+            
+            resultsDiv.appendChild(card);
+        });
+    }
+
+    // Handle copying to clipboard and updating button text state (persistent style)
+    function copyText(button, text) {
+        navigator.clipboard.writeText(text).then(() => {
+            
+            // 1. Reset all buttons back to their default state
+            const allButtons = document.querySelectorAll('.copy-btn');
+            allButtons.forEach(btn => {
+                btn.innerText = 'Copy';
+                btn.classList.remove('copied');
+            });
+
+            // 2. Set the clicked button to "Copied!" and keep it green
+            button.innerText = 'Copied!';
+            button.classList.add('copied');
+            
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            alert('Failed to copy to clipboard.');
+        });
+    }
+
+    // Add event listeners to automatically recalculate when ANY input changes
+    // This will naturally rebuild the UI, resetting the copy button states
+    document.getElementById('lastDate').addEventListener('change', calculateDates);
+    document.getElementById('customSupply').addEventListener('input', calculateDates);
+    
+    document.querySelectorAll('input[name="earlyDays"]').forEach(radio => {
+        radio.addEventListener('change', calculateDates);
+    });
+
+    document.querySelectorAll('input[name="verbiage"]').forEach(radio => {
+        radio.addEventListener('change', calculateDates);
+    });
+</script>
+
+</body>
+</html>

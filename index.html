@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy App Tools Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        p.subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .tool-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .tool-card {
+            background-color: #e8f4f8;
+            border: 1px solid #bce0ee;
+            border-radius: 6px;
+            padding: 20px;
+            text-decoration: none;
+            color: #2980b9;
+            font-weight: bold;
+            font-size: 1.2em;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .tool-card:hover {
+            background-color: #d4ebf2;
+            border-color: #3498db;
+            color: #1c5980;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        .tool-card span {
+            font-size: 0.8em;
+            color: #555;
+            font-weight: normal;
+            margin-top: 8px;
+        }
+        .credits {
+            margin-top: auto;
+            text-align: center;
+            color: #95a5a6;
+            font-size: 0.9em;
+            border-top: 1px solid #ecf0f1;
+            padding-top: 20px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Pharmacy App Tools</h1>
+        <p class="subtitle">Select a tool below to begin</p>
+
+        <div class="tool-grid">
+            <a href="DispenseDateCalc.html" class="tool-card">
+                Dispense Date Calculator
+                <span>Calculate target dates and generate documentation</span>
+            </a>
+
+            <a href="PharmacyDOSCalc.html" class="tool-card">
+                Days of Supply Calculator
+                <span>Insulin, Eye Drops, Inhalers & Topicals</span>
+            </a>
+        </div>
+        
+        <div class="credits">
+            <strong>Pharmacy Tools Designed by Matthew Glaser</strong><br>
+        </div>
+    </div>
+
+</body>
+</html>

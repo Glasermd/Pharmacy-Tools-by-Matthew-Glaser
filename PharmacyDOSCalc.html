@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOS & Annotation Calculator</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #005f73; font-size: 24px; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        .category-buttons { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .cat-btn { background-color: #e9ecef; color: #333; border: 2px solid transparent; padding: 12px 10px; font-size: 14px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; text-align: center; transition: all 0.2s; min-width: 120px; }
+        .cat-btn:hover { background-color: #dee2e6; }
+        .cat-btn.active-btn { background-color: #0a9396; color: white; border-color: #005f73; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        .dynamic-section { display: none; background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #e9ecef; margin-bottom: 15px; }
+        .active { display: block; }
+        
+        .calc-btn { background-color: #0a9396; color: white; border: none; padding: 14px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.2s; }
+        .calc-btn:hover { background-color: #005f73; }
+        
+        .output-box { margin-top: 25px; padding: 15px; background: #e9ecef; border-left: 5px solid #0a9396; border-radius: 4px; font-family: monospace; font-size: 14px; white-space: pre-wrap; line-height: 1.4; }
+        .copy-btn { background-color: #6c757d; color: white; border: none; padding: 12px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%; font-weight: bold; }
+        .copy-btn:hover { background-color: #495057; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        hr { border: 0; height: 1px; background: #e9ecef; margin: 30px 0 15px 0; }
+        .about-section { font-size: 12px; color: #6c757d; text-align: center; line-height: 1.5; }
+        .about-section strong { color: #495057; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Day Supply & Annotation Generator</h1>
+    
+    <label>Select Product Category:</label>
+    <div class="category-buttons">
+        <button type="button" onclick="selectCategory('eyedrops')" id="btn-eyedrops" class="cat-btn">Eye Drops</button>
+        <button type="button" onclick="selectCategory('insulin')" id="btn-insulin" class="cat-btn">Insulin Pens</button>
+        <button type="button" onclick="selectCategory('vials')" id="btn-vials" class="cat-btn">Insulin Vials</button>
+        <button type="button" onclick="selectCategory('topicals')" id="btn-topicals" class="cat-btn">Topicals</button>
+        <button type="button" onclick="selectCategory('inhalers')" id="btn-inhalers" class="cat-btn">Inhalers</button>
+    </div>
+
+    <div id="eyedropsSection" class="dynamic-section">
+        <div class="form-group">
+            <label>Specific Product</label>
+            <select id="eyeProduct" onchange="updateEyeVolume()">
+                <option value="20|999|5">Standard Drops (20 drops/mL) - Default 5mL</option>
+                <option value="32|999|5">Alrex 0.2% (32 drops/mL) - Default 5mL</option>
+                <option value="31|999|5">Atropine Sulf 1% (31 drops/mL) - Default 5mL</option>
+                <option value="33|999|10">Bepotastine / Bepreve 1.5% (33 drops/mL) - Default 10mL</option>
+                <option value="31|999|5">Besivance 0.6% (31 drops/mL) - Default 5mL</option>
+                <option value="30|999|5">Brimonidine 0.2% (30 drops/mL) - Default 5mL</option>
+                <option value="21|999|1.7">Bromfenac 0.07% (21 drops/mL) - Default 1.7mL</option>
+                <option value="31|999|5">Cyclopentolate 1% (31 drops/mL) - Default 5mL</option>
+                <option value="31|999|5">Dexamethasone 0.1% (31 drops/mL) - Default 5mL</option>
+                <option value="28|999|5">Diclofenac Sod 0.1% (28 drops/mL) - Default 5mL</option>
+                <option value="28|999|10">Dorzolamide 2% / Dorzolamide-Timolol (28 drops/mL) - Default 10mL</option>
+                <option value="32|999|5">Istalol 0.5% (32 drops/mL) - Default 5mL</option>
+                <option value="36|42|2.5">Latanoprost (Bausch/Sandoz) (36 drops/mL) - Default 2.5mL</option>
+                <option value="20|42|2.5">Latanoprost (Greenstone) (20 drops/mL) - Default 2.5mL</option>
+                <option value="32|999|5">Levobunolol 0.5% (32 drops/mL) - Default 5mL</option>
+                <option value="31|999|5">Lotemax 0.5% Susp / Loteprednol 0.2% Susp (31 drops/mL) - Default 5mL</option>
+                <option value="25|999|5">Lotemax 0.5% Gel / Loteprednol 0.5% Gel (25 drops/mL) - Default 5g</option>
+                <option value="26.2|999|5">Lotemax SM 0.38% Gel (26.2 drops/gm) - Default 5g</option>
+                <option value="24|999|2.5">Lumigan 0.01% (24 drops/mL) - Default 2.5mL</option>
+                <option value="90|999|3">Miebo 1.3gm/mL (90 drops/mL) - Default 3mL</option>
+                <option value="19|999|3">Prolensa 0.07% (19 drops/mL) - Default 3mL</option>
+                <option value="29|999|5">Timolol 0.25% / 0.5% GF / Timoptic-XE (29 drops/mL) - Default 5mL</option>
+                <option value="32|999|5">Timolol Maleate 0.5% / Timoptic (32 drops/mL) - Default 5mL</option>
+                <option value="100|999|2">Vevye 0.1% (100 drops/mL) - Default 2mL</option>
+                <option value="32|56|2.5">Vyzulta 0.024% (32 drops/mL) - Default 2.5mL</option>
+                <option value="33|42|2.5">Xalatan 0.005% (33 drops/mL) - Default 2.5mL</option>
+                <option value="27|999|5">Zirgan 0.15% Gel (27 drops/mL) - Default 5g</option>
+                <option value="32|999|5">Zylet (32 drops/mL) - Default 5mL</option>
+            </select>
+        </div>
+        <div class="grid-2">
+            <div class="form-group"><label>Bottle/Tube Size (mL or gm)</label><input type="number" id="eyeVolume" value="5"></div>
+            <div class="form-group"><label>Number of Bottles/Tubes Dispensed</label><input type="number" id="eyeQty" value="1"></div>
+            <div class="form-group"><label>Drops per dose (per eye)</label><input type="number" id="eyeDose" value="1"></div>
+            <div class="form-group"><label>Doses per day</label><input type="number" id="eyeFreq" value="1"></div>
+            <div class="form-group"><label>Number of Eyes</label>
+                <select id="eyeCount"><option value="1">One Eye</option><option value="2" selected>Both Eyes</option></select>
+            </div>
+        </div>
+    </div>
+
+    <div id="insulinSection" class="dynamic-section">
+        <div class="form-group">
+            <label>Specific Insulin Pen</label>
+            <select id="insulinProduct" onchange="syncInsulinPens('pens')">
+                <option value="2|28|300|3">Humalog KwikPen U-100 (Prime 2, In-Use 28d, 300u, 3mL)</option>
+                <option value="2|10|300|3">Humulin 70/30 KwikPen (Prime 2, In-Use 10d, 300u, 3mL)</option>
+                <option value="2|14|300|3">Humulin N KwikPen (Prime 2, In-Use 14d, 300u, 3mL)</option>
+                <option value="2|28|300|3">Lantus Solostar (Prime 2, In-Use 28d, 300u, 3mL)</option>
+                <option value="2|42|300|3">Levemir FlexPen / FlexTouch (Prime 2, In-Use 42d, 300u, 3mL)</option>
+                <option value="2|28|300|3">Novolog FlexPen (Prime 2, In-Use 28d, 300u, 3mL)</option>
+                <option value="3|56|450|1.5">Toujeo U300 Solostar (Prime 3, In-Use 56d, 450u, 1.5mL)</option>
+                <option value="4|56|900|3">Toujeo U300 Max Solostar (Prime 4, In-Use 56d, 900u, 3mL)</option>
+                <option value="2|56|300|3">Tresiba FlexTouch U100 (Prime 2, In-Use 56d, 300u, 3mL)</option>
+                <option value="2|56|600|3">Tresiba FlexTouch U200 (Prime 2, In-Use 56d, 600u, 3mL)</option>
+            </select>
+        </div>
+        <div class="grid-2">
+            <div class="form-group"><label>Total mL Dispensed</label><input type="number" id="insMl" value="15" oninput="syncInsulinPens('ml')"></div>
+            <div class="form-group"><label>Number of Pens Dispensed</label><input type="number" id="insPens" value="5" oninput="syncInsulinPens('pens')"></div>
+            <div class="form-group"><label>Units prescribed per dose</label><input type="number" id="insDose" value="20"></div>
+            <div class="form-group"><label>Doses per day</label><input type="number" id="insFreq" value="1"></div>
+        </div>
+    </div>
+
+    <div id="vialsSection" class="dynamic-section">
+        <div class="form-group">
+            <label>Specific Insulin Vial</label>
+            <select id="vialProduct" onchange="syncVials('vials')">
+                <option value="28|1000|10">Humalog / Novolog / Lantus U-100 (In-Use 28d, 10mL)</option>
+                <option value="31|1000|10">Humulin R / Humulin N U-100 (In-Use 31d, 10mL)</option>
+                <option value="42|1000|10">Levemir U-100 (In-Use 42d, 10mL)</option>
+                <option value="56|1000|10">Tresiba U-100 (In-Use 56d, 10mL)</option>
+                <option value="28|10000|20">Humulin R U-500 (In-Use 28d, 20mL)</option>
+            </select>
+        </div>
+        <div class="grid-2">
+            <div class="form-group"><label>Total mL Dispensed</label><input type="number" id="vialMl" value="10" oninput="syncVials('ml')"></div>
+            <div class="form-group"><label>Number of Vials Dispensed</label><input type="number" id="vialQty" value="1" oninput="syncVials('vials')"></div>
+            <div class="form-group"><label>Units prescribed per dose</label><input type="number" id="vialDose" value="20"></div>
+            <div class="form-group"><label>Doses per day</label><input type="number" id="vialFreq" value="1"></div>
+        </div>
+    </div>
+
+    <div id="topicalsSection" class="dynamic-section">
+        <div class="form-group">
+            <label>Specific Product Defaults (Overrides volume)</label>
+            <select id="topicalProduct">
+                <option value="">-- Use Generic Size Calculator Below --</option>
+                <option value="10">Bactroban Ointment / Cream (15g or 22g) -> 10 DOS</option>
+                <option value="30">Benzaclin 1-5% Gel (25, 35, or 50g) -> 30 DOS</option>
+                <option value="70">Cabtreo Gel 50g -> 70 DOS</option>
+                <option value="30">Carac 0.5% Cream 30g -> 30 DOS</option>
+                <option value="30">Duac Gel 45g -> 30 DOS</option>
+                <option value="30">Differin 0.1% Gel (15 or 45g) -> 30 DOS</option>
+                <option value="30">Efudex 2/5% Sol 10mL / 5% Cream 40g -> 30 DOS</option>
+                <option value="90">Estrace Cream 42.5g -> 90 DOS</option>
+                <option value="30">Jublia 4mL -> 30 DOS</option>
+                <option value="60">Jublia 8mL -> 60 DOS</option>
+                <option value="7">Kwell 60mL -> 7 DOS</option>
+                <option value="7">Ovide 60mL -> 7 DOS</option>
+                <option value="30">Penlac 6.6mL -> 30 DOS</option>
+                <option value="90">Premarin Cream 30g -> 90 DOS</option>
+                <option value="30">Retin-A 15/20g -> 30 DOS</option>
+                <option value="45">Retin-A >20g -> 45 DOS</option>
+                <option value="14">Silvadene Cream 85g -> 14 DOS</option>
+                <option value="30">Silvadene Cream 400g -> 30 DOS</option>
+                <option value="45">Soolantra 45g -> 45 DOS</option>
+                <option value="7">Voltaren Gel 100g -> 7 DOS</option>
+            </select>
+        </div>
+        <hr>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Generic Formulation Category</label>
+                <select id="topicalType">
+                    <option value="cream">Creams, Powders, Ointments, Foams, Gels</option>
+                    <option value="lotion">Lotions, Solutions, Shampoos</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Total Grams or mL Dispensed</label>
+                <input type="number" id="topicalVolume" value="30">
+            </div>
+        </div>
+    </div>
+
+    <div id="inhalersSection" class="dynamic-section">
+        <div class="grid-2">
+            <div class="form-group"><label>Total Puffs/Actuations in device</label><input type="number" id="inhTotal" value="200"></div>
+            <div class="form-group"><label>Puffs per dose</label><input type="number" id="inhDose" value="2"></div>
+            <div class="form-group"><label>Doses per day</label><input type="number" id="inhFreq" value="2"></div>
+            <div class="form-group"><label>Number of Inhalers Dispensed</label><input type="number" id="inhQty" value="1"></div>
+        </div>
+    </div>
+
+    <button type="button" class="calc-btn" onclick="calculateDOS()">Calculate & Generate Note</button>
+
+    <div id="outputArea" class="output-box" style="display:none;"></div>
+    <button type="button" id="copyBtn" class="copy-btn" style="display:none;" onclick="copyToClipboard()">Copy to Clipboard</button>
+
+    <hr>
+    <div class="about-section">
+        <p><strong>System Design & Clinical Calculations by:</strong> Matt Glaser</p>
+        <p><em>Developed to standardize pharmacy operations, ensure strict billing compliance, and optimize workflow documentation. Calculations strictly adhere to established manufacturer in-use guidelines and standardized drops-per-mL conversions.</em></p>
+    </div>
+
+</div>
+
+<script>
+    var currentCategory = '';
+
+    function clearOutput() {
+        document.getElementById('outputArea').style.display = 'none';
+        document.getElementById('copyBtn').style.display = 'none';
+        document.getElementById('outputArea').innerText = '';
+    }
+
+    // Attach listeners in a way that works on older browsers
+    window.onload = function() {
+        var inputs = document.getElementsByTagName('input');
+        var selects = document.getElementsByTagName('select');
+        
+        for (var i = 0; i < inputs.length; i++) {
+            // Only attach global clear to inputs that aren't handling their own sync logic yet
+            inputs[i].addEventListener('input', clearOutput);
+        }
+        for (var j = 0; j < selects.length; j++) {
+            selects[j].addEventListener('change', clearOutput);
+        }
+    };
+
+    function updateEyeVolume() {
+        var productData = document.getElementById('eyeProduct').value.split('|');
+        if (productData.length === 3) {
+            var defaultSize = parseFloat(productData[2]);
+            document.getElementById('eyeVolume').value = defaultSize;
+        }
+        clearOutput();
+    }
+
+    // Synchronize mL and Pens boxes
+    function syncInsulinPens(source) {
+        var insProductData = document.getElementById('insulinProduct').value.split('|');
+        var volumePerPen = parseFloat(insProductData[3]); // Now pulls the 4th value: volume per pen
+        
+        if (source === 'pens') {
+            var pens = parseFloat(document.getElementById('insPens').value) || 0;
+            document.getElementById('insMl').value = pens * volumePerPen;
+        } else if (source === 'ml') {
+            var ml = parseFloat(document.getElementById('insMl').value) || 0;
+            document.getElementById('insPens').value = ml / volumePerPen;
+        }
+        clearOutput();
+    }
+
+    // Synchronize mL and Vials boxes
+    function syncVials(source) {
+        var vialProductData = document.getElementById('vialProduct').value.split('|');
+        var volumePerVial = parseFloat(vialProductData[2]); // Pulls the 3rd value: volume per vial
+        
+        if (source === 'vials') {
+            var vials = parseFloat(document.getElementById('vialQty').value) || 0;
+            document.getElementById('vialMl').value = vials * volumePerVial;
+        } else if (source === 'ml') {
+            var ml = parseFloat(document.getElementById('vialMl').value) || 0;
+            document.getElementById('vialQty').value = ml / volumePerVial;
+        }
+        clearOutput();
+    }
+
+    function selectCategory(cat) {
+        currentCategory = cat;
+        
+        var sections = document.querySelectorAll('.dynamic-section');
+        for (var i = 0; i < sections.length; i++) {
+            sections[i].classList.remove('active');
+        }
+        
+        var btns = document.querySelectorAll('.cat-btn');
+        for (var k = 0; k < btns.length; k++) {
+            btns[k].classList.remove('active-btn');
+        }
+        
+        document.getElementById(cat + 'Section').classList.add('active');
+        document.getElementById('btn-' + cat).classList.add('active-btn');
+        
+        clearOutput();
+    }
+
+    function calculateDOS() {
+        if (!currentCategory) {
+            alert("Please select a product category first.");
+            return;
+        }
+
+        var outputText = "";
+
+        if (currentCategory === 'eyedrops') {
+            var productData = document.getElementById('eyeProduct').value.split('|');
+            var dropsPerMl = parseFloat(productData[0]);
+            var inUseLimit = parseFloat(productData[1]);
+            
+            var bottleSize = parseFloat(document.getElementById('eyeVolume').value);
+            var bottleQty = parseFloat(document.getElementById('eyeQty').value);
+            var dose = parseFloat(document.getElementById('eyeDose').value);
+            var freq = parseFloat(document.getElementById('eyeFreq').value);
+            var eyes = parseFloat(document.getElementById('eyeCount').value);
+
+            var dropsPerBottle = bottleSize * dropsPerMl;
+            var dropsPerDay = dose * freq * eyes;
+            var rawDaysPerBottle = dropsPerBottle / dropsPerDay;
+            var daysPerBottle = Math.floor(rawDaysPerBottle); 
+            
+            var note = "";
+            if (inUseLimit !== 999 && daysPerBottle > inUseLimit) {
+                note = "\n*NOTE: Bottle volume lasts " + daysPerBottle + " days, but manufacturer in-use limit caps at " + inUseLimit + " days per vial once opened. Applying limit.*";
+                daysPerBottle = inUseLimit;
+            }
+
+            var totalDos = daysPerBottle * bottleQty;
+            var totalVolume = bottleSize * bottleQty;
+            
+            var bottlesFor30 = Math.floor(30 / daysPerBottle);
+            if (bottlesFor30 < 1) bottlesFor30 = 1; 
+            
+            var bottlesFor90 = Math.floor(90 / daysPerBottle);
+            if (bottlesFor90 < 1) bottlesFor90 = 1; 
+
+            outputText = "EYE DROPS CALCULATION:\n" + 
+                "Quantity Dispensed: " + totalVolume + " mL (or gm) [" + bottleQty + " bottle(s) of " + bottleSize + " mL]\n" + 
+                "Conversion factor: " + dropsPerMl + " drops/mL\n" + 
+                "Total Drops Per Bottle: " + dropsPerBottle.toFixed(1) + "\n" + 
+                "Daily Usage: " + dose + " drop(s) x " + freq + " time(s)/day x " + eyes + " eye(s) = " + dropsPerDay + " drops/day\n\n" + 
+                "Formula: " + dropsPerBottle.toFixed(1) + " / " + dropsPerDay + " = " + rawDaysPerBottle.toFixed(2) + " days/bottle -> Rounded down to " + Math.floor(rawDaysPerBottle) + " days/bottle." + note + "\n\n" + 
+                "Formula: " + daysPerBottle + " usable days/bottle x " + bottleQty + " bottle(s) = " + totalDos + " DOS.\n" + 
+                "Billed DOS: " + totalDos + " days.\n\n" + 
+                "-- Reference Projections --\n" + 
+                "For <= 30 Days: Dispense " + bottlesFor30 + " bottle(s) (yields " + (bottlesFor30 * daysPerBottle) + " DOS)\n" + 
+                "For <= 90 Days: Dispense " + bottlesFor90 + " bottle(s) (yields " + (bottlesFor90 * daysPerBottle) + " DOS)";
+
+        } else if (currentCategory === 'insulin') {
+            var insProductData = document.getElementById('insulinProduct').value.split('|');
+            var prime = parseFloat(insProductData[0]);
+            var insInUseMax = parseFloat(insProductData[1]);
+            var unitsPerPen = parseFloat(insProductData[2]);
+            var volumePerPen = parseFloat(insProductData[3]);
+
+            var insDose = parseFloat(document.getElementById('insDose').value);
+            var insFreq = parseFloat(document.getElementById('insFreq').value);
+            var pens = parseFloat(document.getElementById('insPens').value);
+
+            var insUnitsPerDay = (insDose + prime) * insFreq;
+            var rawDaysPerPen = unitsPerPen / insUnitsPerDay;
+            var daysPerPen = Math.floor(rawDaysPerPen);
+            
+            var insNote = "";
+            if (daysPerPen > insInUseMax) {
+                insNote = " *NOTE: Pen volume lasts " + daysPerPen + " days, but manufacturer In-Use limit caps at " + insInUseMax + " days. Using " + insInUseMax + " days per pen for calculation.*";
+                daysPerPen = insInUseMax;
+            }
+
+            var totalInsDos = daysPerPen * pens;
+            var totalMl = pens * volumePerPen;
+            
+            var pensFor30 = Math.floor(30 / daysPerPen);
+            if (pensFor30 < 1) pensFor30 = 1; 
+            
+            var pensFor90 = Math.floor(90 / daysPerPen);
+            if (pensFor90 < 1) pensFor90 = 1; 
+
+            outputText = "INSULIN PEN CALCULATION:\n" + 
+                "Quantity Dispensed: " + totalMl + " mL [" + pens + " pen(s) of " + volumePerPen + " mL]\n" +
+                "Daily Use: (" + insDose + "u dose + " + prime + "u prime) x " + insFreq + "/day = " + insUnitsPerDay + " units/day\n" + 
+                "Days per pen: " + unitsPerPen + "u / " + insUnitsPerDay + "u/day = " + rawDaysPerPen.toFixed(2) + " days -> Rounded down to " + Math.floor(rawDaysPerPen) + " days/pen.\n" + insNote + "\n\n" + 
+                "Formula: " + daysPerPen + " usable days/pen x " + pens + " pen(s) dispensed = " + totalInsDos + " DOS.\n" + 
+                "Billed DOS: " + totalInsDos + " days.\n\n" + 
+                "-- Reference Projections --\n" + 
+                "For <= 30 Days: Dispense " + pensFor30 + " pen(s) (yields " + (pensFor30 * daysPerPen) + " DOS)\n" + 
+                "For <= 90 Days: Dispense " + pensFor90 + " pen(s) (yields " + (pensFor90 * daysPerPen) + " DOS)";
+
+        } else if (currentCategory === 'vials') {
+            var vialProductData = document.getElementById('vialProduct').value.split('|');
+            var vialInUseMax = parseFloat(vialProductData[0]);
+            var unitsPerVial = parseFloat(vialProductData[1]); 
+            var volumePerVial = parseFloat(vialProductData[2]); 
+
+            var vialDose = parseFloat(document.getElementById('vialDose').value);
+            var vialFreq = parseFloat(document.getElementById('vialFreq').value);
+            var vials = parseFloat(document.getElementById('vialQty').value);
+
+            var vialUnitsPerDay = vialDose * vialFreq; 
+            var rawDaysPerVial = unitsPerVial / vialUnitsPerDay;
+            var daysPerVial = Math.floor(rawDaysPerVial);
+            
+            var vialNote = "";
+            if (daysPerVial > vialInUseMax) {
+                vialNote = " *NOTE: Vial volume lasts " + daysPerVial + " days, but manufacturer In-Use limit caps at " + vialInUseMax + " days. Using " + vialInUseMax + " days per vial for calculation.*";
+                daysPerVial = vialInUseMax;
+            }
+
+            var totalVialDos = daysPerVial * vials;
+            var totalVialMl = vials * volumePerVial;
+            
+            var vialsFor30 = Math.floor(30 / daysPerVial);
+            if (vialsFor30 < 1) vialsFor30 = 1;
+            
+            var vialsFor90 = Math.floor(90 / daysPerVial);
+            if (vialsFor90 < 1) vialsFor90 = 1;
+
+            outputText = "INSULIN VIAL CALCULATION:\n" + 
+                "Quantity Dispensed: " + totalVialMl + " mL [" + vials + " vial(s) of " + volumePerVial + " mL]\n" +
+                "Daily Use: " + vialDose + "u dose x " + vialFreq + "/day = " + vialUnitsPerDay + " units/day (No priming required)\n" + 
+                "Days per vial: " + unitsPerVial + "u / " + vialUnitsPerDay + "u/day = " + rawDaysPerVial.toFixed(2) + " days -> Rounded down to " + Math.floor(rawDaysPerVial) + " days/vial.\n" + vialNote + "\n\n" + 
+                "Formula: " + daysPerVial + " usable days/vial x " + vials + " vial(s) dispensed = " + totalVialDos + " DOS.\n" + 
+                "Billed DOS: " + totalVialDos + " days.\n\n" + 
+                "-- Reference Projections --\n" + 
+                "For <= 30 Days: Dispense " + vialsFor30 + " vial(s) (yields " + (vialsFor30 * daysPerVial) + " DOS)\n" + 
+                "For <= 90 Days: Dispense " + vialsFor90 + " vial(s) (yields " + (vialsFor90 * daysPerVial) + " DOS)";
+
+        } else if (currentCategory === 'topicals') {
+            var specificFixedDos = document.getElementById('topicalProduct').value;
+            if (specificFixedDos) {
+                outputText = "TOPICAL CALCULATION (Specific Override):\nProduct matched default guidelines.\nBilled DOS: " + specificFixedDos + " days";
+            } else {
+                var type = document.getElementById('topicalType').value;
+                var volume = parseFloat(document.getElementById('topicalVolume').value);
+                var dos = 0;
+                
+                if (type === 'cream') {
+                    if (volume <= 29) dos = 7;
+                    else if (volume <= 44) dos = 15;
+                    else if (volume <= 59) dos = 20;
+                    else if (volume <= 99) dos = 25;
+                    else dos = 30;
+                } else if (type === 'lotion') {
+                    if (volume <= 120) dos = 15;
+                    else if (volume <= 240) dos = 20;
+                    else dos = 30;
+                }
+                
+                outputText = "TOPICAL CALCULATION (Standard Default):\n" + 
+                    "Category: " + type.toUpperCase() + "\n" + 
+                    "Quantity Dispensed: " + volume + " g/mL\n" + 
+                    "Calculation logic based on standard package size tier.\n" + 
+                    "Billed DOS: " + dos + " days";
+            }
+
+        } else if (currentCategory === 'inhalers') {
+            var total = parseFloat(document.getElementById('inhTotal').value);
+            var inhDose = parseFloat(document.getElementById('inhDose').value);
+            var inhFreq = parseFloat(document.getElementById('inhFreq').value);
+            var qty = parseFloat(document.getElementById('inhQty').value);
+
+            var puffsPerDay = inhDose * inhFreq;
+            var daysPerInhaler = Math.floor(total / puffsPerDay);
+            var totalInhDos = daysPerInhaler * qty;
+            
+            var inhFor30 = Math.floor(30 / daysPerInhaler);
+            if (inhFor30 < 1) inhFor30 = 1;
+            
+            var inhFor90 = Math.floor(90 / daysPerInhaler);
+            if (inhFor90 < 1) inhFor90 = 1;
+
+            outputText = "INHALER CALCULATION:\n" + 
+                "Daily Use: " + inhDose + " puff(s) x " + inhFreq + "/day = " + puffsPerDay + " puffs/day\n" + 
+                "Days per inhaler: " + total + " total puffs / " + puffsPerDay + " puffs/day = " + daysPerInhaler + " days/inhaler\n\n" + 
+                "Formula: " + daysPerInhaler + " days x " + qty + " inhaler(s) = " + totalInhDos + " days\n" + 
+                "Billed DOS: " + totalInhDos + " days.\n\n" + 
+                "-- Reference Projections --\n" + 
+                "For <= 30 Days: Dispense " + inhFor30 + " inhaler(s) (yields " + (inhFor30 * daysPerInhaler) + " DOS)\n" + 
+                "For <= 90 Days: Dispense " + inhFor90 + " inhaler(s) (yields " + (inhFor90 * daysPerInhaler) + " DOS)";
+        }
+
+        var outArea = document.getElementById('outputArea');
+        outArea.innerText = outputText;
+        outArea.style.display = 'block';
+        document.getElementById('copyBtn').style.display = 'block';
+    }
+
+    function copyToClipboard() {
+        var textToCopy = document.getElementById('outputArea').innerText;
+        
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textToCopy).then(showCopied);
+        } else {
+            var textArea = document.createElement("textarea");
+            textArea.value = textToCopy;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showCopied();
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+            document.body.removeChild(textArea);
+        }
+    }
+
+    function showCopied() {
+        var btn = document.getElementById('copyBtn');
+        btn.innerText = "Copied!";
+        btn.style.backgroundColor = "#28a745";
+        setTimeout(function() {
+            btn.innerText = "Copy to Clipboard";
+            btn.style.backgroundColor = "#6c757d";
+        }, 2000);
+    }
+</script>
+
+</body>
+</html>
