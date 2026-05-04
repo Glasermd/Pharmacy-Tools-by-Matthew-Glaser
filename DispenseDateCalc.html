@@ -36,13 +36,31 @@
             flex-grow: 1;
         }
 
-        h1 {
-            font-size: 1.5rem;
-            margin-top: 0;
-            margin-bottom: 24px;
-            color: #0f172a;
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
             border-bottom: 2px solid var(--border);
             padding-bottom: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #0f172a;
+        }
+
+        .today-date {
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: var(--bg);
+            padding: 4px 12px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
         }
 
         .form-row {
@@ -169,12 +187,38 @@
         .credits strong {
             color: #475569;
         }
+
+        .dashboard-link {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn-outline {
+            display: inline-block;
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Dispense Date Calculator</h1>
+    <div class="header-container">
+        <h1>Dispense Date Calculator</h1>
+        <div id="todayDisplay" class="today-date"></div>
+    </div>
     
     <div class="form-row">
         <div class="form-group" style="margin-bottom: 0;">
@@ -212,8 +256,12 @@
 </div>
 
 <div class="credits">
-    <strong>Designed by Matt Glaser</strong><br>
+    <strong>Designed by Matthew Glaser, PharmD</strong><br>
     Intended to standardize dispense date calculations and documentation.
+</div>
+
+<div class="dashboard-link">
+    <a href="index.html" class="btn-outline">&larr; Back to Pharmacy Tools Dashboard</a>
 </div>
 
 <script>
@@ -251,8 +299,8 @@
         resultsDiv.innerHTML = ''; // Clear prior results
 
         // 1. Build HTML for the "Days Between" tracker at the top
-        // Replaced \t with a single space
-        const trackerString = `Last Dispensed Date: ${formatDate(baseDate, false)} = ${diffDays} Days between last Dispensed and today counting day dispensed`;
+        const todayStr = formatDate(today, false);
+        const trackerString = `Last Dispensed: ${formatDate(baseDate, false)} = ${diffDays} days elapsed through today (${todayStr}), counting day dispensed`;
         
         const topCard = document.createElement('div');
         topCard.className = 'result-card highlight';
@@ -274,7 +322,7 @@
         // Determine the text snippet based on verbiage selection
         const verbiageText = verbiageSelection === 'ok' 
             ? ', ok to dispense ' 
-            : ' updated DND before to ';
+            : ', updated DND before to ';
 
         // 2. Build HTML for each supply requirement
         supplyOptions.forEach(supply => {
@@ -284,7 +332,8 @@
             const nextDate = new Date(baseDate);
             nextDate.setDate(nextDate.getDate() + daysToAdd);
 
-            const annotationString = `Last Dispensed Date ${formatDate(baseDate)} x ${supply} days, counting day dispensed and allowing for ${earlyDays} day early refill${verbiageText}${formatDate(nextDate)}`;
+            // ** UPDATED FORMAT STRING HERE TO MATCH OPTION 1 **
+            const annotationString = `Last Dispensed: ${formatDate(baseDate)} x ${supply} days. Counting day dispensed & allowing ${earlyDays} day early${verbiageText}${formatDate(nextDate)}`;
 
             // Build HTML for this result
             const card = document.createElement('div');
@@ -325,8 +374,29 @@
         });
     }
 
+    // Initialize the app by setting the default date and displaying today's date
+    window.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        
+        // Display today's date in the UI header
+        document.getElementById('todayDisplay').innerText = `Today: ${formatDate(today, false)}`;
+
+        // Set default input date to exactly 1 month ago
+        const pastDate = new Date();
+        pastDate.setMonth(pastDate.getMonth() - 1);
+        
+        // Format to YYYY-MM-DD required by the input[type="date"]
+        const yyyy = pastDate.getFullYear();
+        const mm = String(pastDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(pastDate.getDate()).padStart(2, '0');
+        
+        document.getElementById('lastDate').value = `${yyyy}-${mm}-${dd}`;
+        
+        // Trigger calculation instantly
+        calculateDates();
+    });
+
     // Add event listeners to automatically recalculate when ANY input changes
-    // This will naturally rebuild the UI, resetting the copy button states
     document.getElementById('lastDate').addEventListener('change', calculateDates);
     document.getElementById('customSupply').addEventListener('input', calculateDates);
     
