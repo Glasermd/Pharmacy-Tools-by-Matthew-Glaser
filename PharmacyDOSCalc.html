@@ -63,11 +63,44 @@
         .btn-copy-secondary { background-color: #6c757d; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; flex: 1; font-size: 14px; font-weight: bold; transition: 0.2s;}
         .btn-copy-secondary:hover { background-color: #5a6268; }
 
-        .footer { margin-top: 40px; font-size: 0.85em; color: #666; text-align: center; border-top: 1px solid #ccc; padding-top: 15px; padding-bottom: 15px; }
-        
-        .dashboard-btn { display: inline-block; padding: 10px 15px; background-color: #343a40; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; transition: 0.2s; }
-        .dashboard-btn:hover { background-color: #23272b; }
-        .dashboard-container { text-align: center; margin-top: 20px; margin-bottom: 40px; }
+        /* Dynamic Copied State */
+        .copied-state { background-color: #28a745 !important; color: white !important; }
+        .copied-state:hover { background-color: #218838 !important; }
+
+        /* Credits & Dashboard Link Formatting */
+        .credits {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #555;
+            margin-top: 40px;
+            border-top: 1px solid #ddd;
+        }
+        .disclaimer {
+            font-size: 11px;
+            color: #777;
+            margin-top: 10px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.4;
+        }
+        .dashboard-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 16px;
+            background-color: #f8f9fa;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .dashboard-link:hover {
+            background-color: #e2e6ea;
+            color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -112,12 +145,12 @@
         <input type="number" id="penML" placeholder="e.g., 15" oninput="updatePensFromML()">
 
         <label for="penDose">Prescribed Units per Dose:</label>
-        <input type="number" id="penDose" placeholder="e.g., 20" oninput="clearOutput()">
+        <input type="number" id="penDose" placeholder="e.g., 20" oninput="triggerAutoCalc()">
 
         <label for="penFreq">Doses per Day (Frequency):</label>
-        <input type="number" id="penFreq" placeholder="e.g., 3" oninput="clearOutput()">
+        <input type="number" id="penFreq" placeholder="e.g., 3" oninput="triggerAutoCalc()">
 
-        <button class="btn-calc" onclick="calculateInsulinPen()">Calculate DOS</button>
+        <button class="btn-calc" onclick="calculateInsulinPen(false)">Calculate DOS</button>
     </div>
 
     <div id="insulinVialSection" class="calc-section">
@@ -138,9 +171,9 @@
         <input type="number" id="vialML" placeholder="e.g., 10" oninput="updateVialsFromML()">
 
         <label for="vialDose">Max Daily Units Prescribed:</label>
-        <input type="number" id="vialDose" placeholder="e.g., 45" oninput="clearOutput()">
+        <input type="number" id="vialDose" placeholder="e.g., 45" oninput="triggerAutoCalc()">
 
-        <button class="btn-calc" onclick="calculateInsulinVial()">Calculate DOS</button>
+        <button class="btn-calc" onclick="calculateInsulinVial(false)">Calculate DOS</button>
     </div>
 
     <div id="inhalerSection" class="calc-section">
@@ -158,18 +191,18 @@
         </select>
 
         <label for="inhalerTotalDoses">Actuations (Doses) in Device:</label>
-        <input type="number" id="inhalerTotalDoses" value="200" oninput="clearOutput()">
+        <input type="number" id="inhalerTotalDoses" value="200" oninput="triggerAutoCalc()">
 
         <label for="inhalerPackages">Number of Devices Dispensed:</label>
-        <input type="number" id="inhalerPackages" value="1" oninput="clearOutput()">
+        <input type="number" id="inhalerPackages" value="1" oninput="triggerAutoCalc()">
 
         <label for="inhalerPuffs">Max Puffs/Sprays per Dose:</label>
-        <input type="number" id="inhalerPuffs" placeholder="e.g., 2" oninput="clearOutput()">
+        <input type="number" id="inhalerPuffs" placeholder="e.g., 2" oninput="triggerAutoCalc()">
 
         <label for="inhalerFreq">Frequency (Times per Day):</label>
-        <input type="number" id="inhalerFreq" placeholder="e.g., 4" oninput="clearOutput()">
+        <input type="number" id="inhalerFreq" placeholder="e.g., 4" oninput="triggerAutoCalc()">
 
-        <button class="btn-calc" onclick="calculateInhaler()">Calculate DOS</button>
+        <button class="btn-calc" onclick="calculateInhaler(false)">Calculate DOS</button>
     </div>
 
     <div id="eyeDropSection" class="calc-section">
@@ -208,10 +241,10 @@
         </select>
 
         <label for="eyeDropSize">Bottle Size (mL):</label>
-        <input type="number" id="eyeDropSize" value="5" oninput="clearOutput()">
+        <input type="number" id="eyeDropSize" value="5" oninput="triggerAutoCalc()">
 
         <label for="eyeDropQty">Number of Bottles Dispensed:</label>
-        <input type="number" id="eyeDropQty" value="1" oninput="clearOutput()">
+        <input type="number" id="eyeDropQty" value="1" oninput="triggerAutoCalc()">
 
         <label>Affected Eye(s):</label>
         <div class="toggle-buttons">
@@ -220,12 +253,12 @@
         </div>
 
         <label for="eyeDropPerAdmin">Drops per Eye (per dose):</label>
-        <input type="number" id="eyeDropPerAdmin" value="1" oninput="clearOutput()">
+        <input type="number" id="eyeDropPerAdmin" value="1" oninput="triggerAutoCalc()">
 
         <label for="eyeDropFreq">Frequency (Times per day):</label>
-        <input type="number" id="eyeDropFreq" placeholder="e.g., 2" oninput="clearOutput()">
+        <input type="number" id="eyeDropFreq" placeholder="e.g., 2" oninput="triggerAutoCalc()">
 
-        <button class="btn-calc" onclick="calculateEyeDrop()">Calculate DOS</button>
+        <button class="btn-calc" onclick="calculateEyeDrop(false)">Calculate DOS</button>
     </div>
 
     <div id="earDropSection" class="calc-section">
@@ -237,10 +270,10 @@
         </select>
 
         <label for="earDropSize">Bottle Size (mL):</label>
-        <input type="number" id="earDropSize" value="10" oninput="clearOutput()">
+        <input type="number" id="earDropSize" value="10" oninput="triggerAutoCalc()">
 
         <label for="earDropQty">Number of Bottles Dispensed:</label>
-        <input type="number" id="earDropQty" value="1" oninput="clearOutput()">
+        <input type="number" id="earDropQty" value="1" oninput="triggerAutoCalc()">
 
         <label>Affected Ear(s):</label>
         <div class="toggle-buttons">
@@ -249,19 +282,19 @@
         </div>
 
         <label for="earDropPerAdmin">Drops per Ear (per dose):</label>
-        <input type="number" id="earDropPerAdmin" value="4" oninput="clearOutput()">
+        <input type="number" id="earDropPerAdmin" value="4" oninput="triggerAutoCalc()">
 
         <label for="earDropFreq">Frequency (Times per day):</label>
-        <input type="number" id="earDropFreq" placeholder="e.g., 3" oninput="clearOutput()">
+        <input type="number" id="earDropFreq" placeholder="e.g., 3" oninput="triggerAutoCalc()">
 
-        <button class="btn-calc" onclick="calculateEarDrop()">Calculate DOS</button>
+        <button class="btn-calc" onclick="calculateEarDrop(false)">Calculate DOS</button>
     </div>
 
     <div id="topicalSection" class="calc-section">
         <h3 style="color: #fd7e14;">Topicals (Creams, Ointments, Gels, Solutions)</h3>
         
         <label for="topicalType">Select Formulation / Product:</label>
-        <select id="topicalType" onchange="clearOutput()">
+        <select id="topicalType" onchange="triggerAutoCalc()">
             <option value="cream">Standard: Creams, Ointments, Gels, Powders, Foams</option>
             <option value="lotion">Standard: Lotions, Solutions, Shampoos</option>
             <optgroup label="Specific Exceptions">
@@ -279,9 +312,9 @@
         </select>
 
         <label for="topicalSize">Total Dispensed Quantity (grams or mL):</label>
-        <input type="number" id="topicalSize" placeholder="e.g., 45" oninput="clearOutput()">
+        <input type="number" id="topicalSize" placeholder="e.g., 45" oninput="triggerAutoCalc()">
 
-        <button class="btn-calc" onclick="calculateTopical()">Calculate Default DOS</button>
+        <button class="btn-calc" onclick="calculateTopical(false)">Calculate Default DOS</button>
     </div>
 
     <div id="outputSection">
@@ -295,32 +328,34 @@
 
         <div id="copyActions" class="copy-actions">
             <button id="btn-copy-all" class="btn-copy" onclick="copyAll()">Copy Full Annotation (Main + Projections)</button>
-            <button id="btn-copy-main" class="btn-copy-secondary" onclick="copyToClipboard('formulaOutput')">Copy Main Annotation Only</button>
-            <button id="btn-copy-proj" class="btn-copy-secondary" onclick="copyToClipboard('projectionOutput')">Copy Projections Only</button>
+            <button id="btn-copy-main" class="btn-copy-secondary" onclick="copyToClipboard('formulaOutput', 'btn-copy-main')">Copy Main Annotation Only</button>
+            <button id="btn-copy-proj" class="btn-copy-secondary" onclick="copyToClipboard('projectionOutput', 'btn-copy-proj')">Copy Projections Only</button>
         </div>
     </div>
 
-    <div class="footer">
-        <strong>Designed by Matthew Glaser, PharmD</strong><br><br>
-        Designed for operational compliance and workflow optimization. 
-        <br>Calculations align with standard SOP guidelines and manufacturer in-use limits.
-    </div>
-
-    <div class="dashboard-container">
-        <a href="index.html" class="dashboard-btn">← Back to Pharmacy Tools Dashboard</a>
+    <div class="credits">
+        <strong>Designed by Matthew Glaser, PharmD</strong><br>
+        <em>Intended to standardize days of supply calculations and documentation</em>
+        <div class="disclaimer">
+            <strong>Disclaimer:</strong> This tool is provided "as is" under the MIT License. It is designed to assist with standardized calculations, but clinical verification and final dispensing accuracy remain the sole responsibility of the dispensing pharmacist.
+        </div>
+        <a href="index.html" class="dashboard-link">← Back to Pharmacy Tools Dashboard</a>
     </div>
 
     <script>
-        // Setup global event listeners to clear output on typing
-        var inputs = document.querySelectorAll("input, select");
-        for(var i = 0; i < inputs.length; i++){
-            inputs[i].addEventListener("input", clearOutput);
-            inputs[i].addEventListener("change", clearOutput);
-        }
-
         // Global Variables
         var eyeMultiplier = 2; // Default to 'Both Eyes'
         var earMultiplier = 2; // Default to 'Both Ears'
+
+        // Central Auto-Calculate Engine
+        function triggerAutoCalc() {
+            if (document.getElementById('insulinPenSection').style.display === 'block') calculateInsulinPen(true);
+            else if (document.getElementById('insulinVialSection').style.display === 'block') calculateInsulinVial(true);
+            else if (document.getElementById('inhalerSection').style.display === 'block') calculateInhaler(true);
+            else if (document.getElementById('eyeDropSection').style.display === 'block') calculateEyeDrop(true);
+            else if (document.getElementById('earDropSection').style.display === 'block') calculateEarDrop(true);
+            else if (document.getElementById('topicalSection').style.display === 'block') calculateTopical(true);
+        }
 
         // Global Reset Function
         function resetCalculator() {
@@ -370,15 +405,40 @@
             clearOutput();
         }
 
+        function resetCopyButtons() {
+            var btnAll = document.getElementById("btn-copy-all");
+            var btnMain = document.getElementById("btn-copy-main");
+            var btnProj = document.getElementById("btn-copy-proj");
+
+            if (btnAll) {
+                btnAll.classList.remove("copied-state");
+                btnAll.innerText = "Copy Full Annotation (Main + Projections)";
+            }
+            if (btnProj) {
+                btnProj.classList.remove("copied-state");
+                btnProj.innerText = "Copy Projections Only";
+            }
+            if (btnMain) {
+                btnMain.classList.remove("copied-state");
+                if (document.getElementById("projectionContainer").style.display === "block") {
+                    btnMain.innerText = "Copy Main Annotation Only";
+                } else {
+                    btnMain.innerText = "Copy Annotation";
+                }
+            }
+        }
+
         function clearOutput() {
             document.getElementById("outputSection").style.display = "none";
             document.getElementById("formulaOutput").value = "";
             document.getElementById("projectionContainer").style.display = "none";
             document.getElementById("projectionOutput").value = "";
+            resetCopyButtons();
         }
 
         function displayOutput(hasProjections) {
             document.getElementById("outputSection").style.display = "block";
+            resetCopyButtons(); // Ensure clean slate for text rendering
             
             if (hasProjections) {
                 document.getElementById("projectionContainer").style.display = "block";
@@ -397,11 +457,18 @@
             }
         }
 
-        function copyToClipboard(elementId) {
+        function copyToClipboard(elementId, btnId) {
             var copyText = document.getElementById(elementId);
             copyText.select();
             document.execCommand("copy");
-            alert("Copied to clipboard!");
+            
+            resetCopyButtons(); // Clear active state from any other copy button
+            
+            var btn = document.getElementById(btnId);
+            if (btn) {
+                btn.classList.add("copied-state");
+                btn.innerText = "✓ Copied!";
+            }
         }
 
         function copyAll() {
@@ -416,13 +483,25 @@
             document.execCommand("copy");
             document.body.removeChild(tempTextArea);
             
-            alert("Full annotation and projections copied to clipboard!");
+            resetCopyButtons(); // Clear active state from any other copy button
+            
+            var btn = document.getElementById("btn-copy-all");
+            if (btn) {
+                btn.classList.add("copied-state");
+                btn.innerText = "✓ Copied!";
+            }
         }
 
         // --- INSULIN PENS LOGIC ---
         function updatePenFields() {
             var dropdown = document.getElementById("insulinPenSelect");
-            if(dropdown.value === "") return;
+            if(dropdown.value === "") {
+                document.getElementById("penQty").value = "";
+                document.getElementById("penML").value = "";
+                document.getElementById("penFreq").value = "";
+                triggerAutoCalc();
+                return;
+            }
             
             var selectedText = dropdown.options[dropdown.selectedIndex].text.toLowerCase();
             
@@ -446,9 +525,8 @@
                 freqInput.value = "";
             }
 
-            // Generate ML from newly set Pen Qty
+            // Generate ML from newly set Pen Qty and then auto-calc
             updateMLFromPens();
-            clearOutput();
         }
 
         function updatePensFromML() {
@@ -462,6 +540,7 @@
             } else {
                 document.getElementById("penQty").value = "";
             }
+            triggerAutoCalc();
         }
 
         function updateMLFromPens() {
@@ -475,22 +554,26 @@
             } else {
                 document.getElementById("penML").value = "";
             }
+            triggerAutoCalc();
         }
 
-        function calculateInsulinPen() {
-            if(document.getElementById("insulinPenSelect").value === "") { alert("Please select a pen."); return; }
-            
-            var data = document.getElementById("insulinPenSelect").value.split("|");
-            var primeUnits = parseFloat(data[0]);
-            var inUseDays = parseFloat(data[1]);
-            var unitsPerML = parseFloat(data[2]);
-            var volumePerPen = parseFloat(data[3]);
-
+        function calculateInsulinPen(isAuto = false) {
+            var selectVal = document.getElementById("insulinPenSelect").value;
             var numberOfPens = parseFloat(document.getElementById("penQty").value);
             var dosePerAdmin = parseFloat(document.getElementById("penDose").value);
             var dosesPerDay = parseFloat(document.getElementById("penFreq").value);
 
-            if (!numberOfPens || !dosePerAdmin || !dosesPerDay) { alert("Please fill in all fields."); return; }
+            if (!selectVal || !numberOfPens || !dosePerAdmin || !dosesPerDay) { 
+                if (!isAuto) alert("Please fill in all fields."); 
+                clearOutput();
+                return; 
+            }
+            
+            var data = selectVal.split("|");
+            var primeUnits = parseFloat(data[0]);
+            var inUseDays = parseFloat(data[1]);
+            var unitsPerML = parseFloat(data[2]);
+            var volumePerPen = parseFloat(data[3]);
 
             var unitsPerPen = volumePerPen * unitsPerML;
             var dailyUnits = (dosePerAdmin + primeUnits) * dosesPerDay;
@@ -542,14 +625,18 @@
         // --- INSULIN VIALS LOGIC ---
         function updateVialFields() {
             var dropdown = document.getElementById("insulinVialSelect");
-            if(dropdown.value === "") return;
+            if(dropdown.value === "") {
+                document.getElementById("vialQty").value = "";
+                document.getElementById("vialML").value = "";
+                triggerAutoCalc();
+                return;
+            }
             
             // Smart Defaults for Vials
             document.getElementById("vialQty").value = 1;
             
             // Generate ML from newly set Vial Qty
             updateMLFromVials();
-            clearOutput();
         }
 
         function updateVialsFromML() {
@@ -563,6 +650,7 @@
             } else {
                 document.getElementById("vialQty").value = "";
             }
+            triggerAutoCalc();
         }
 
         function updateMLFromVials() {
@@ -576,21 +664,25 @@
             } else {
                 document.getElementById("vialML").value = "";
             }
+            triggerAutoCalc();
         }
 
-        function calculateInsulinVial() {
-            if(document.getElementById("insulinVialSelect").value === "") { alert("Please select a vial."); return; }
+        function calculateInsulinVial(isAuto = false) {
+            var selectVal = document.getElementById("insulinVialSelect").value;
+            var numberOfVials = parseFloat(document.getElementById("vialQty").value);
+            var dailyUnits = parseFloat(document.getElementById("vialDose").value);
+
+            if (!selectVal || !numberOfVials || !dailyUnits) { 
+                if (!isAuto) alert("Please fill in all fields."); 
+                clearOutput();
+                return; 
+            }
             
-            var data = document.getElementById("insulinVialSelect").value.split("|");
+            var data = selectVal.split("|");
             var primeUnits = 0; 
             var inUseDays = parseFloat(data[1]);
             var unitsPerML = parseFloat(data[2]);
             var volumePerVial = parseFloat(data[3]);
-
-            var numberOfVials = parseFloat(document.getElementById("vialQty").value);
-            var dailyUnits = parseFloat(document.getElementById("vialDose").value);
-
-            if (!numberOfVials || !dailyUnits) { alert("Please fill in all fields."); return; }
 
             var unitsPerVial = volumePerVial * unitsPerML;
             var uncappedDaysPerVial = unitsPerVial / dailyUnits;
@@ -642,7 +734,7 @@
             var puffsInput = document.getElementById("inhalerPuffs");
             var freqInput = document.getElementById("inhalerFreq");
 
-            if (select !== "custom") {
+            if (select !== "custom" && select !== "") {
                 dosesInput.value = select;
                 
                 // Smart Defaults for Inhalers
@@ -666,18 +758,22 @@
                 dosesInput.value = "";
                 puffsInput.value = "";
                 freqInput.value = "";
-                dosesInput.focus();
+                if (select === "custom") dosesInput.focus();
             }
-            clearOutput();
+            triggerAutoCalc();
         }
 
-        function calculateInhaler() {
+        function calculateInhaler(isAuto = false) {
             var dosesPerPackage = parseFloat(document.getElementById("inhalerTotalDoses").value);
             var packagesDispensed = parseFloat(document.getElementById("inhalerPackages").value);
             var puffsPerDose = parseFloat(document.getElementById("inhalerPuffs").value);
             var dosesPerDay = parseFloat(document.getElementById("inhalerFreq").value);
 
-            if (!dosesPerPackage || !packagesDispensed || !puffsPerDose || !dosesPerDay) { alert("Please fill in all fields."); return; }
+            if (!dosesPerPackage || !packagesDispensed || !puffsPerDose || !dosesPerDay) { 
+                if (!isAuto) alert("Please fill in all fields."); 
+                clearOutput();
+                return; 
+            }
 
             var dailyDose = puffsPerDose * dosesPerDay;
             var totalDosesDispensed = dosesPerPackage * packagesDispensed;
@@ -720,8 +816,10 @@
             if(dropdown.value !== "") {
                 var data = dropdown.value.split("|");
                 document.getElementById("eyeDropSize").value = data[2];
+            } else {
+                document.getElementById("eyeDropSize").value = "";
             }
-            clearOutput();
+            triggerAutoCalc();
         }
 
         function setEyeToggle(multiplier) {
@@ -734,20 +832,25 @@
             } else {
                 document.getElementById('btn-both-eyes').classList.add('active');
             }
-            clearOutput();
+            triggerAutoCalc();
         }
 
-        function calculateEyeDrop() {
-            var data = document.getElementById("eyeProduct").value.split("|");
-            var dropsPerML = parseFloat(data[0]);
-            var inUseLimit = parseFloat(data[1]);
-            
+        function calculateEyeDrop(isAuto = false) {
+            var selectVal = document.getElementById("eyeProduct").value;
             var bottleSize = parseFloat(document.getElementById("eyeDropSize").value);
             var numBottles = parseFloat(document.getElementById("eyeDropQty").value);
             var dropsPerAdmin = parseFloat(document.getElementById("eyeDropPerAdmin").value);
             var freqPerDay = parseFloat(document.getElementById("eyeDropFreq").value);
 
-            if (!bottleSize || !numBottles || !dropsPerAdmin || !freqPerDay) { alert("Please fill in all fields."); return; }
+            if (!selectVal || !bottleSize || !numBottles || !dropsPerAdmin || !freqPerDay) { 
+                if (!isAuto) alert("Please fill in all fields."); 
+                clearOutput();
+                return; 
+            }
+            
+            var data = selectVal.split("|");
+            var dropsPerML = parseFloat(data[0]);
+            var inUseLimit = parseFloat(data[1]);
 
             var dropsPerEyeDaily = dropsPerAdmin * freqPerDay;
             var totalDailyDrops = dropsPerEyeDaily * eyeMultiplier;
@@ -803,8 +906,10 @@
             if(dropdown.value !== "") {
                 var data = dropdown.value.split("|");
                 document.getElementById("earDropSize").value = data[2];
+            } else {
+                document.getElementById("earDropSize").value = "";
             }
-            clearOutput();
+            triggerAutoCalc();
         }
 
         function setEarToggle(multiplier) {
@@ -817,20 +922,25 @@
             } else {
                 document.getElementById('btn-both-ears').classList.add('active');
             }
-            clearOutput();
+            triggerAutoCalc();
         }
 
-        function calculateEarDrop() {
-            var data = document.getElementById("earProduct").value.split("|");
-            var dropsPerML = parseFloat(data[0]);
-            var inUseLimit = parseFloat(data[1]);
-            
+        function calculateEarDrop(isAuto = false) {
+            var selectVal = document.getElementById("earProduct").value;
             var bottleSize = parseFloat(document.getElementById("earDropSize").value);
             var numBottles = parseFloat(document.getElementById("earDropQty").value);
             var dropsPerAdmin = parseFloat(document.getElementById("earDropPerAdmin").value);
             var freqPerDay = parseFloat(document.getElementById("earDropFreq").value);
 
-            if (!bottleSize || !numBottles || !dropsPerAdmin || !freqPerDay) { alert("Please fill in all fields."); return; }
+            if (!selectVal || !bottleSize || !numBottles || !dropsPerAdmin || !freqPerDay) { 
+                if (!isAuto) alert("Please fill in all fields."); 
+                clearOutput();
+                return; 
+            }
+            
+            var data = selectVal.split("|");
+            var dropsPerML = parseFloat(data[0]);
+            var inUseLimit = parseFloat(data[1]);
 
             var dropsPerEarDaily = dropsPerAdmin * freqPerDay;
             var totalDailyDrops = dropsPerEarDaily * earMultiplier;
@@ -881,13 +991,17 @@
         }
 
         // --- TOPICALS LOGIC ---
-        function calculateTopical() {
+        function calculateTopical(isAuto = false) {
             var type = document.getElementById("topicalType").value;
             var size = parseFloat(document.getElementById("topicalSize").value);
             var dos = 0;
             var annotation = "";
 
-            if (!size) { alert("Please enter the dispensed quantity."); return; }
+            if (!size) { 
+                if (!isAuto) alert("Please enter the dispensed quantity."); 
+                clearOutput();
+                return; 
+            }
 
             if (type === "cream") {
                 if (size <= 29) dos = 7;
@@ -954,3 +1068,4 @@
     </script>
 </body>
 </html>
+    
