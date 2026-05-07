@@ -85,9 +85,15 @@
             margin-right: auto;
             line-height: 1.4;
         }
+        .bottom-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
         .dashboard-link {
             display: inline-block;
-            margin-top: 15px;
             padding: 8px 16px;
             background-color: #f8f9fa;
             border: 1px solid #ccc;
@@ -100,6 +106,14 @@
         .dashboard-link:hover {
             background-color: #e2e6ea;
             color: #0056b3;
+        }
+        .reference-link {
+            color: #17a2b8;
+            border-color: #17a2b8;
+        }
+        .reference-link:hover {
+            background-color: #17a2b8;
+            color: white;
         }
     </style>
 </head>
@@ -339,7 +353,10 @@
         <div class="disclaimer">
             <strong>Disclaimer:</strong> This tool is provided "as is" under the MIT License. It is designed to assist with standardized calculations, but clinical verification and final dispensing accuracy remain the sole responsibility of the dispensing pharmacist.
         </div>
-        <a href="index.html" class="dashboard-link">← Back to Pharmacy Tools Dashboard</a>
+        <div class="bottom-links">
+            <a href="dos_reference.html" target="_blank" class="dashboard-link reference-link">📄 View Clinical Reference Guide</a>
+            <a href="index.html" class="dashboard-link">← Back to Pharmacy Tools Dashboard</a>
+        </div>
     </div>
 
     <script>

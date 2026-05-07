@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy DOS Custom Clinical Reference Guide</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background-color: #f4f7f6; 
+            color: #333; 
+            line-height: 1.6;
+        }
+        
+        h1 { color: #0056b3; border-bottom: 3px solid #ccc; padding-bottom: 10px; margin-top: 0; }
+        h2 { color: #333; margin-top: 40px; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+        
+        .validation-note {
+            font-size: 0.9em;
+            color: #555;
+            font-style: italic;
+            margin-bottom: 15px;
+            background: #e9ecef;
+            padding: 10px;
+            border-left: 4px solid #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #0056b3;
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f5f9; }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+            color: #0056b3;
+        }
+
+        /* Nav and Footer Styles */
+        .top-nav { margin-bottom: 25px; }
+        
+        .dashboard-btn { 
+            display: inline-block; 
+            padding: 10px 15px; 
+            background-color: #343a40; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            transition: 0.2s; 
+        }
+        .dashboard-btn:hover { background-color: #23272b; color: white; text-decoration: none; }
+
+        .credits {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #555;
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+        }
+        .disclaimer {
+            font-size: 11px;
+            color: #777;
+            margin-top: 10px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.4;
+        }
+        .dashboard-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 16px;
+            background-color: #f8f9fa;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .dashboard-link:hover {
+            background-color: #e2e6ea;
+            color: #0056b3;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <a href="PharmacyDOSCalc.html" class="dashboard-btn">← Back to DOS Calculator</a>
+    </div>
+
+    <h1>Pharmacy DOS Custom Clinical Reference Guide</h1>
+    <p>This document serves as an independent clinical reference guide for Days of Supply (DOS) calculations, cross-referenced against standard prescribing information and manufacturer guidelines.</p>
+
+    <h2>1. Insulin Pens (In-Use Expiration & Priming Constants)</h2>
+    <div class="validation-note">
+        Validation Note: The 4-unit prime for Toujeo Max is specifically verified per the Sanofi package insert safety test instructions, distinguishing it from the standard 3-unit prime of the regular Toujeo Solostar.
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Concentration</th>
+                <th>Pen Volume</th>
+                <th>Priming Units</th>
+                <th>In-Use Expiration (Room Temp)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Humalog" target="_blank">Humalog KwikPen</a></td><td>U-100 / U-200</td><td>3 mL</td><td>2 Units</td><td>28 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Humulin+70/30" target="_blank">Humulin 70/30 KwikPen</a></td><td>U-100</td><td>3 mL</td><td>2 Units</td><td>10 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Lantus" target="_blank">Lantus Solostar</a></td><td>U-100</td><td>3 mL</td><td>2 Units</td><td>28 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Novolog" target="_blank">Novolog FlexPen</a></td><td>U-100</td><td>3 mL</td><td>2 Units</td><td>28 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Toujeo" target="_blank">Toujeo Solostar</a></td><td>U-300</td><td>1.5 mL</td><td>3 Units</td><td>56 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Toujeo+Max" target="_blank">Toujeo Max Solostar</a></td><td>U-300</td><td>3 mL</td><td>4 Units</td><td>56 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Tresiba" target="_blank">Tresiba FlexTouch</a></td><td>U-100 / U-200</td><td>3 mL</td><td>2 Units</td><td>56 Days</td></tr>
+        </tbody>
+    </table>
+
+    <h2>2. Insulin Vials (In-Use Expiration Constants)</h2>
+    <div class="validation-note">
+        Validation Note: Vials do not require the standard safety prime factored into daily pen calculations.
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Concentration</th>
+                <th>Vial Volume</th>
+                <th>In-Use Expiration (Room Temp)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Humalog" target="_blank">Humalog</a> / <a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Novolog" target="_blank">Novolog</a></td><td>U-100</td><td>10 mL</td><td>28 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Lantus" target="_blank">Lantus</a></td><td>U-100</td><td>10 mL</td><td>28 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Humulin" target="_blank">Humulin N / R / 70/30</a></td><td>U-100</td><td>10 mL</td><td>31 Days</td></tr>
+        </tbody>
+    </table>
+
+    <h2>3. Ophthalmic / Otic Solutions (Drops per mL Conversions)</h2>
+    <div class="validation-note">
+        Validation Note: Standard industry conversion is historically 20 drops/mL. However, newer micro-drop technologies significantly deviate from this. For example, the package insert for Miebo confirms a tiny 11 µL drop size yielding exactly 90 drops/mL, while Vevye operates at 100 drops/mL (0.01 mL per drop).
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Drops per mL</th>
+                <th>Noted In-Use Expiration</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Standard Industry Default</td><td>20 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Alrex" target="_blank">Alrex 0.2%</a></td><td>32 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Atropine+Sulfate+Ophthalmic" target="_blank">Atropine Sulf 1%</a></td><td>31 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Bepreve" target="_blank">Bepotastine / Bepreve 1.5%</a></td><td>33 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Besivance" target="_blank">Besivance 0.6%</a></td><td>31 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Brimonidine" target="_blank">Brimonidine 0.2%</a></td><td>30 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Bromfenac" target="_blank">Bromfenac 0.07%</a></td><td>21 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Cyclopentolate" target="_blank">Cyclopentolate 1%</a></td><td>31 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Dexamethasone+Ophthalmic" target="_blank">Dexamethasone 0.1%</a></td><td>31 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Diclofenac+Ophthalmic" target="_blank">Diclofenac Sod 0.1%</a></td><td>28 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Dorzolamide" target="_blank">Dorzolamide 2% / Dorzolamide-Timolol</a></td><td>28 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Istalol" target="_blank">Istalol 0.5%</a></td><td>32 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Latanoprost" target="_blank">Latanoprost (Bausch/Sandoz)</a></td><td>36 drops/mL</td><td>42 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Latanoprost" target="_blank">Latanoprost (Greenstone)</a></td><td>20 drops/mL</td><td>42 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Levobunolol" target="_blank">Levobunolol 0.5%</a></td><td>32 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Lotemax" target="_blank">Lotemax 0.5% Susp / Loteprednol 0.2%</a></td><td>31 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Lotemax+Gel" target="_blank">Lotemax 0.5% Gel / Loteprednol 0.5%</a></td><td>25 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Lotemax+SM" target="_blank">Lotemax SM 0.38% Gel</a></td><td>26.2 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Lumigan" target="_blank">Lumigan 0.01%</a></td><td>24 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Miebo" target="_blank">Miebo</a></td><td>90 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Prolensa" target="_blank">Prolensa 0.07%</a></td><td>19 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Timoptic-XE" target="_blank">Timolol 0.25% / 0.5% GF / Timoptic-XE</a></td><td>29 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Timoptic" target="_blank">Timolol Maleate 0.5% / Timoptic</a></td><td>32 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Vevye" target="_blank">Vevye 0.1%</a></td><td>100 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Vyzulta" target="_blank">Vyzulta 0.024%</a></td><td>32 drops/mL</td><td>56 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Xalatan" target="_blank">Xalatan 0.005%</a></td><td>33 drops/mL</td><td>42 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Zirgan" target="_blank">Zirgan 0.15% Gel</a></td><td>27 drops/mL</td><td>-</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Zylet" target="_blank">Zylet</a></td><td>32 drops/mL</td><td>-</td></tr>
+        </tbody>
+    </table>
+
+    <h2>4. Topicals (Fixed Exception Limits)</h2>
+    <div class="validation-note">
+        Validation Note: These represent common third-party billing ceilings and manufacturer packaging thresholds that override standard weight-to-day conversion matrices.
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Medication / Formulation</th>
+                <th>Standard Dispense Quantity</th>
+                <th>Maximum Days of Supply</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Cabtreo" target="_blank">Cabtreo Gel</a></td><td>50 g</td><td>70 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Carac" target="_blank">Carac 0.5% Cream</a></td><td>30 g</td><td>30 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Estrace+Cream" target="_blank">Estrace Cream</a></td><td>42.5 g</td><td>90 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Jublia" target="_blank">Jublia</a></td><td>4 mL</td><td>30 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Jublia" target="_blank">Jublia</a></td><td>8 mL</td><td>60 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Ovide" target="_blank">Kwell / Ovide (Lindane/Malathion)</a></td><td>60 mL</td><td>7 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Penlac" target="_blank">Penlac Lacquer</a></td><td>6.6 mL</td><td>30 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Premarin+Cream" target="_blank">Premarin Cream</a></td><td>30 g</td><td>90 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Soolantra" target="_blank">Soolantra 1% Cream</a></td><td>45 g</td><td>45 Days</td></tr>
+            <tr><td><a href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?labeltype=all&query=Voltaren+Gel" target="_blank">Voltaren Gel</a></td><td>100 g</td><td>7 Days</td></tr>
+        </tbody>
+    </table>
+
+    <div class="credits">
+        <strong>Designed by Matthew Glaser, PharmD</strong><br>
+        <em>Intended to standardize days of supply calculations and documentation</em>
+        <div class="disclaimer">
+            <strong>Disclaimer:</strong> This tool is provided "as is" under the MIT License. It is designed to assist with standardized calculations, but clinical verification and final dispensing accuracy remain the sole responsibility of the dispensing pharmacist.
+        </div>
+        <a href="index.html" class="dashboard-link">← Back to Pharmacy Tools Dashboard</a>
+    </div>
+
+</body>
+</html>
