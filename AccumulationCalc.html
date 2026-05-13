@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accumulation Calculator</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #334155;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 40px 20px;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 95vh;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 750px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+        }
+        
+        .subtitle {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .segmented-control {
+            display: flex;
+            background: var(--border);
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
+            margin-bottom: 24px;
+        }
+        
+        .segmented-control label {
+            flex: 1;
+            text-align: center;
+            padding: 10px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin: 0;
+            transition: background-color 0.2s, box-shadow 0.2s, color 0.2s;
+            color: #475569;
+        }
+
+        .segmented-control input[type="radio"] {
+            display: none;
+        }
+
+        .segmented-control input[type="radio"]:checked + label {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            color: var(--primary);
+        }
+
+        .fill-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: #2c3e50;
+        }
+
+        input[type="date"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        .mode-standard .col-dose { display: none !important; }
+        .mode-dose .col-standard { display: none !important; }
+        .col-dose { display: flex; gap: 12px; flex: 2; }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover { background-color: var(--primary-hover); }
+        
+        .btn-remove {
+            background-color: white;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 8px 12px;
+        }
+        
+        .btn-remove:hover {
+            background-color: #fef2f2;
+        }
+
+        .add-row-container {
+            margin-bottom: 24px;
+        }
+
+        .results {
+            margin-top: 24px;
+            border-top: 2px solid var(--border);
+            padding-top: 24px;
+        }
+
+        .result-card {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .result-header {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #0f172a;
+        }
+
+        .result-text {
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 0.9rem;
+            background: white;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            white-space: pre-wrap;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .credits {
+            text-align: center;
+            margin-top: 30px;
+            max-width: 750px;
+        }
+        
+        .credits-main {
+            font-size: 1rem;
+            color: #2c3e50;
+            margin-bottom: 12px;
+        }
+
+        .disclaimer {
+            font-size: 11px;
+            color: #777;
+            line-height: 1.4;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 750px;
+        }
+
+        .btn-outline {
+            display: inline-block;
+            background-color: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Accumulation Calculator</h1>
+    <div class="subtitle">Track standard stockpiling or mathematically account for dose changes.</div>
+    
+    <div class="segmented-control">
+        <input type="radio" id="modeStandard" name="calcMode" value="standard" checked onchange="toggleMode()">
+        <label for="modeStandard">Standard (Days of Supply)</label>
+        
+        <input type="radio" id="modeDose" name="calcMode" value="dose" onchange="toggleMode()">
+        <label for="modeDose">Dose Change (Qty & Daily Dose)</label>
+    </div>
+
+    <div id="fillsContainer" class="mode-standard">
+        </div>
+
+    <div class="add-row-container">
+        <button class="btn" onclick="addFillRow()">+ Add Another Fill</button>
+    </div>
+
+    <div class="results" id="resultsSection" style="display: none;">
+        <div class="result-card">
+            <div class="result-header">Accumulation Audit Trail</div>
+            <div class="result-text" id="outputText"></div>
+            <button class="btn" id="copyBtn" onclick="copyText()">Copy Note</button>
+        </div>
+    </div>
+</div>
+
+<div class="nav-links">
+    <a href="index.html" class="btn-outline">&larr; Dashboard</a>
+    <a href="DispenseDateCalc.html" class="btn-outline">Dispense Date Calculator &rarr;</a>
+</div>
+
+<div class="credits">
+    <div class="credits-main">
+        <strong>Designed by Matthew Glaser, PharmD</strong><br>
+        <em>Note: Calculations safely round down (truncate) partial days of supply.</em>
+    </div>
+    <div class="disclaimer">
+        <strong>Disclaimer:</strong> This tool is provided "as is" under the MIT License. It is designed to assist with standardized calculations, but clinical verification and final dispensing accuracy remain the sole responsibility of the dispensing pharmacist.
+    </div>
+</div>
+
+<script>
+    let rowCount = 0;
+
+    function formatDate(date) {
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        const y = String(date.getFullYear()).slice(-2);
+        return `${m}/${d}/${y}`;
+    }
+
+    function toggleMode() {
+        const mode = document.querySelector('input[name="calcMode"]:checked').value;
+        const container = document.getElementById('fillsContainer');
+        
+        if (mode === 'standard') {
+            container.classList.remove('mode-dose');
+            container.classList.add('mode-standard');
+        } else {
+            container.classList.remove('mode-standard');
+            container.classList.add('mode-dose');
+        }
+        calculateAccumulation();
+    }
+
+    function addFillRow() {
+        rowCount++;
+        const container = document.getElementById('fillsContainer');
+        const row = document.createElement('div');
+        row.className = 'fill-row';
+        row.id = `row-${rowCount}`;
+        
+        row.innerHTML = `
+            <div class="form-group">
+                <label>Dispense Date</label>
+                <input type="date" class="fill-date" onchange="calculateAccumulation()">
+            </div>
+            
+            <div class="form-group col-standard">
+                <label>Days of Supply</label>
+                <input type="number" class="fill-dos" value="30" min="1" oninput="calculateAccumulation()">
+            </div>
+
+            <div class="col-dose">
+                <div class="form-group">
+                    <label>Qty Dispensed</label>
+                    <input type="number" class="fill-qty" value="30" min="1" step="0.1" oninput="calculateAccumulation()">
+                </div>
+                <div class="form-group">
+                    <label>Daily Dose (Units)</label>
+                    <input type="number" class="fill-dose" value="1" min="0.1" step="0.1" oninput="calculateAccumulation()">
+                </div>
+            </div>
+
+            ${rowCount > 1 ? `<button class="btn btn-remove" onclick="removeRow(${rowCount})">X</button>` : `<div style="width: 40px;"></div>`}
+        `;
+        container.appendChild(row);
+    }
+
+    function removeRow(id) {
+        document.getElementById(`row-${id}`).remove();
+        calculateAccumulation();
+    }
+
+    function calculateAccumulation() {
+        const mode = document.querySelector('input[name="calcMode"]:checked').value;
+        const rows = document.querySelectorAll('.fill-row');
+        const fills = [];
+
+        rows.forEach(row => {
+            const dateVal = row.querySelector('.fill-date').value;
+            if (dateVal) {
+                const [y, m, d] = dateVal.split('-').map(Number);
+                if (mode === 'standard') {
+                    const dosVal = parseInt(row.querySelector('.fill-dos').value, 10);
+                    if (!isNaN(dosVal)) fills.push({ date: new Date(y, m - 1, d), dos: dosVal });
+                } else {
+                    const qtyVal = parseFloat(row.querySelector('.fill-qty').value);
+                    const doseVal = parseFloat(row.querySelector('.fill-dose').value);
+                    if (!isNaN(qtyVal) && !isNaN(doseVal) && doseVal > 0) {
+                        fills.push({ date: new Date(y, m - 1, d), qty: qtyVal, dose: doseVal });
+                    }
+                }
+            }
+        });
+
+        const resultsSection = document.getElementById('resultsSection');
+        
+        if (fills.length < 2) {
+            resultsSection.style.display = 'none';
+            return;
+        }
+
+        resultsSection.style.display = 'block';
+        fills.sort((a, b) => a.date - b.date);
+
+        let details = "";
+        let expectedRunOutDate = null;
+
+        if (mode === 'standard') {
+            let totalAccumulatedDays = 0;
+            expectedRunOutDate = new Date(fills[0].date);
+            expectedRunOutDate.setDate(expectedRunOutDate.getDate() + fills[0].dos);
+
+            details += `Fill 1: ${formatDate(fills[0].date)} (${fills[0].dos} days)\n`;
+
+            for (let i = 1; i < fills.length; i++) {
+                const currentFill = fills[i];
+                details += `Fill ${i + 1}: ${formatDate(currentFill.date)} (${currentFill.dos} days) `;
+                
+                if (currentFill.date < expectedRunOutDate) {
+                    const diffTime = expectedRunOutDate.getTime() - currentFill.date.getTime();
+                    const daysEarly = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    totalAccumulatedDays += daysEarly;
+                    
+                    expectedRunOutDate = new Date(currentFill.date);
+                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentFill.dos + totalAccumulatedDays);
+                    
+                    details += `-> ${daysEarly} days early\n`;
+                } else {
+                    details += `-> On time/Late\n`;
+                    expectedRunOutDate = new Date(currentFill.date);
+                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentFill.dos);
+                }
+            }
+
+            details += `\nTotal Accumulated Buffer: ${totalAccumulatedDays} days on hand\n`;
+            details += `Adjusted Target Run-out Date: ${formatDate(expectedRunOutDate)}`;
+
+        } 
+        else {
+            let totalAccumulatedUnits = 0;
+            let currentDose = fills[0].dose;
+            let currentDos = Math.floor(fills[0].qty / currentDose); 
+            
+            expectedRunOutDate = new Date(fills[0].date);
+            expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentDos);
+
+            details += `Fill 1: ${formatDate(fills[0].date)} (Qty: ${fills[0].qty}, Dose: ${currentDose}/day) -> ${currentDos} days\n`;
+
+            for (let i = 1; i < fills.length; i++) {
+                const currentFill = fills[i];
+                details += `Fill ${i + 1}: ${formatDate(currentFill.date)} (Qty: ${currentFill.qty}, Dose: ${currentFill.dose}/day) `;
+
+                if (currentFill.date < expectedRunOutDate) {
+                    const diffTime = expectedRunOutDate.getTime() - currentFill.date.getTime();
+                    const daysEarly = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    const unitsBanked = daysEarly * currentDose;
+                    totalAccumulatedUnits += unitsBanked;
+
+                    let unitsOnHand = totalAccumulatedUnits + currentFill.qty;
+                    currentDose = currentFill.dose; 
+                    
+                    let newDos = Math.floor(unitsOnHand / currentDose);
+
+                    expectedRunOutDate = new Date(currentFill.date);
+                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + newDos);
+
+                    let cleanBanked = unitsBanked % 1 === 0 ? unitsBanked : unitsBanked.toFixed(1);
+                    let cleanOnHand = unitsOnHand % 1 === 0 ? unitsOnHand : unitsOnHand.toFixed(1);
+
+                    details += `-> ${daysEarly} days early (${cleanBanked} units banked).\n`;
+                    details += `   Total units on hand: ${cleanOnHand}. Adjusted supply: ${newDos} days.\n`;
+                } else {
+                    details += `-> On time/Late (0 units banked).\n`;
+                    
+                    totalAccumulatedUnits = 0;
+                    currentDose = currentFill.dose;
+                    let newDos = Math.floor(currentFill.qty / currentDose);
+                    
+                    expectedRunOutDate = new Date(currentFill.date);
+                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + newDos);
+                    
+                    details += `   Adjusted supply: ${newDos} days.\n`;
+                }
+            }
+
+            let equivDays = Math.floor(totalAccumulatedUnits / currentDose);
+            let cleanTotalAccum = totalAccumulatedUnits % 1 === 0 ? totalAccumulatedUnits : totalAccumulatedUnits.toFixed(1);
+
+            details += `\nTotal Accumulated Buffer: ${cleanTotalAccum} units (equivalent to ${equivDays} days at current dose)\n`;
+            details += `Adjusted Target Run-out Date: ${formatDate(expectedRunOutDate)}`;
+        }
+
+        document.getElementById('outputText').innerText = details;
+        
+        const btn = document.getElementById('copyBtn');
+        btn.innerText = 'Copy Note';
+        btn.classList.remove('copied');
+        btn.style.backgroundColor = 'var(--primary)';
+    }
+
+    function copyText() {
+        const text = document.getElementById('outputText').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById('copyBtn');
+            btn.innerText = 'Copied!';
+            btn.style.backgroundColor = '#16a34a';
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        addFillRow();
+        addFillRow();
+    });
+</script>
+
+</body>
+</html>

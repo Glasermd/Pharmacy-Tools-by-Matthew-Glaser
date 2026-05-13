@@ -8,7 +8,7 @@
         :root {
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
-            --bg: #f8fafc;
+            --bg: #f4f7f6;
             --card-bg: #ffffff;
             --text: #334155;
             --border: #e2e8f0;
@@ -18,22 +18,22 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            padding: 20px;
+            padding: 40px 20px;
             line-height: 1.5;
             display: flex;
             flex-direction: column;
+            align-items: center;
             min-height: 95vh;
+            margin: 0;
         }
 
         .container {
             max-width: 650px;
             width: 100%;
-            margin: 0 auto;
             background: var(--card-bg);
-            padding: 24px;
+            padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            flex-grow: 1;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .header-container {
@@ -48,16 +48,16 @@
         }
 
         h1 {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             margin: 0;
-            color: #0f172a;
+            color: #2c3e50;
         }
 
         .today-date {
             color: #64748b;
             font-weight: 600;
             font-size: 0.95rem;
-            background: var(--bg);
+            background: #f8fafc;
             padding: 4px 12px;
             border-radius: 16px;
             border: 1px solid var(--border);
@@ -71,6 +71,7 @@
             display: block;
             font-weight: 600;
             margin-bottom: 8px;
+            color: #2c3e50;
         }
 
         input[type="date"], input[type="number"] {
@@ -82,7 +83,44 @@
             box-sizing: border-box;
         }
 
-        /* Segmented Button Styles for Display Modes */
+        .date-control {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .date-control input[type="date"] {
+            flex-grow: 1;
+        }
+
+        .date-btn {
+            background-color: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: #475569;
+            font-size: 0.9rem;
+            width: 42px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .date-btn:hover {
+            background-color: #e2e8f0;
+        }
+
+        .checkbox-label {
+            font-weight: normal;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
         .segmented-control {
             display: flex;
             background: var(--border);
@@ -139,7 +177,7 @@
         }
 
         .result-card {
-            background: var(--bg);
+            background: #f8fafc;
             border: 1px solid var(--border);
             padding: 16px;
             margin-bottom: 16px;
@@ -205,49 +243,67 @@
             font-style: italic;
         }
 
+        .inline-custom-input {
+            width: 50px;
+            padding: 2px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-family: inherit;
+            color: #0f172a;
+        }
+
         .credits {
             text-align: center;
             margin-top: 30px;
-            color: #64748b;
-            font-size: 0.85rem;
-            line-height: 1.6;
+            max-width: 650px;
         }
         
-        .credits strong {
-            color: #475569;
+        .credits-main {
+            font-size: 1rem;
+            color: #2c3e50;
+            margin-bottom: 12px;
         }
 
         .disclaimer {
-            font-size: 0.75rem;
-            color: #94a3b8;
-            margin-top: 12px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            font-size: 11px;
+            color: #777;
             line-height: 1.4;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
         }
 
-        .dashboard-link {
-            text-align: center;
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
             margin-top: 20px;
-            margin-bottom: 20px;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 650px;
         }
 
         .btn-outline {
             display: inline-block;
-            background-color: transparent;
+            background-color: white;
             color: var(--primary);
             border: 2px solid var(--primary);
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 12px 20px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
             transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .btn-outline:hover {
             background-color: var(--primary);
             color: white;
+            transform: translateY(-2px);
         }
 
         @keyframes fadeIn {
@@ -266,7 +322,14 @@
     
     <div class="form-group">
         <label for="lastDate">Last Dispensed Date:</label>
-        <input type="date" id="lastDate">
+        <div class="date-control">
+            <input type="date" id="lastDate">
+            <button type="button" class="date-btn" onclick="adjustBaseDate(1)" title="Add 1 Day">▲</button>
+            <button type="button" class="date-btn" onclick="adjustBaseDate(-1)" title="Subtract 1 Day">▼</button>
+        </div>
+        <label class="checkbox-label">
+            <input type="checkbox" id="autoSyncDate"> Auto-adjust date based on display option
+        </label>
     </div>
 
     <div class="form-group">
@@ -285,7 +348,10 @@
             <label for="view90">90 Days</label>
             
             <input type="radio" id="viewCustom" name="viewMode" value="custom">
-            <label for="viewCustom">Custom</label>
+            <label for="viewCustom" style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-basis: 100%;">
+                Custom: 
+                <input type="number" id="customSupplyTop" class="inline-custom-input" value="15" min="1">
+            </label>
         </div>
     </div>
 
@@ -321,7 +387,7 @@
         </div>
         
         <div class="result-card" id="card-30">
-            <div class="result-header">30 Days Supply</div>
+            <div class="result-header" id="header-30">30 day</div>
             <div class="result-output">
                 <p class="result-text" id="text-30"></p>
                 <button class="copy-btn" id="btn-30" onclick="copyText(this, 'text-30')">Copy</button>
@@ -329,7 +395,7 @@
         </div>
 
         <div class="result-card" id="card-60">
-            <div class="result-header">60 Days Supply</div>
+            <div class="result-header" id="header-60">60 day</div>
             <div class="result-output">
                 <p class="result-text" id="text-60"></p>
                 <button class="copy-btn" id="btn-60" onclick="copyText(this, 'text-60')">Copy</button>
@@ -337,7 +403,7 @@
         </div>
 
         <div class="result-card" id="card-90">
-            <div class="result-header">90 Days Supply</div>
+            <div class="result-header" id="header-90">90 day</div>
             <div class="result-output">
                 <p class="result-text" id="text-90"></p>
                 <button class="copy-btn" id="btn-90" onclick="copyText(this, 'text-90')">Copy</button>
@@ -346,33 +412,33 @@
 
         <div class="result-card" id="card-custom">
             <div class="result-header" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                <span>Custom Supply:</span>
-                <input type="number" id="customSupply" value="15" min="1" style="width: 85px; padding: 6px; font-size: 1rem; margin: 0; border: 1px solid var(--border); border-radius: 4px;"> 
-                <span>Days</span>
+                <input type="number" id="customSupplyBottom" value="15" min="1" style="width: 85px; padding: 6px; font-size: 1rem; margin: 0; border: 1px solid var(--border); border-radius: 4px;"> 
+                <span id="header-custom">day</span>
             </div>
             <div class="result-output">
                 <p class="result-text" id="text-custom"></p>
                 <button class="copy-btn" id="btn-custom" onclick="copyText(this, 'text-custom')">Copy</button>
             </div>
         </div>
-
     </div>
 </div>
 
+<div class="nav-links">
+    <a href="index.html" class="btn-outline">&larr; Dashboard</a>
+    <a href="AccumulationCalc.html" class="btn-outline">Accumulation Calculator &rarr;</a>
+</div>
+
 <div class="credits">
-    <strong>Designed by Matthew Glaser, PharmD</strong><br>
-    <em>Intended to standardize dispense date calculations and documentation.</em>
+    <div class="credits-main">
+        <strong>Designed by Matthew Glaser, PharmD</strong><br>
+        <em>Intended to standardize dispense date calculations and documentation</em>
+    </div>
     <div class="disclaimer">
         <strong>Disclaimer:</strong> This tool is provided "as is" under the MIT License. It is designed to assist with standardized calculations, but clinical verification and final dispensing accuracy remain the sole responsibility of the dispensing pharmacist.
     </div>
 </div>
 
-<div class="dashboard-link">
-    <a href="index.html" class="btn-outline">&larr; Back to Pharmacy Tools Dashboard</a>
-</div>
-
 <script>
-    // Format date as MM/DD/YY (or M/D/YY to match the original spreadsheet style)
     function formatDate(date, padZero = true) {
         const m = padZero ? String(date.getMonth() + 1).padStart(2, '0') : date.getMonth() + 1;
         const d = padZero ? String(date.getDate()).padStart(2, '0') : date.getDate();
@@ -380,14 +446,36 @@
         return `${m}/${d}/${y}`;
     }
 
-    // Generate the specific annotation string 
+    function setDateMonthsAgo(months) {
+        const pastDate = new Date();
+        pastDate.setMonth(pastDate.getMonth() - months);
+        const yyyy = pastDate.getFullYear();
+        const mm = String(pastDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(pastDate.getDate()).padStart(2, '0');
+        document.getElementById('lastDate').value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function adjustBaseDate(daysToAdd) {
+        const dateInput = document.getElementById('lastDate');
+        if (!dateInput.value) return;
+
+        const [year, month, day] = dateInput.value.split('-').map(Number);
+        const newDate = new Date(year, month - 1, day);
+        newDate.setDate(newDate.getDate() + daysToAdd);
+
+        const yyyy = newDate.getFullYear();
+        const mm = String(newDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(newDate.getDate()).padStart(2, '0');
+
+        dateInput.value = `${yyyy}-${mm}-${dd}`;
+        calculateDates();
+    }
+
     function getAnnotationString(baseDate, supply, earlyDays, verbiageText) {
-        // Next Date = Base Date + Supply - Counting Day (1) - Early Days
         const daysToAdd = supply - 1 - earlyDays; 
         const nextDate = new Date(baseDate);
         nextDate.setDate(nextDate.getDate() + daysToAdd);
         
-        // Dynamically fix grammar for 0 (no), 1 day, vs multiple days
         let earlyText;
         if (earlyDays === 0) {
             earlyText = 'no days early';
@@ -400,35 +488,30 @@
         return `Last Dispensed: ${formatDate(baseDate)} x ${supply} days. Counting day dispensed & allowing ${earlyText}${verbiageText}${formatDate(nextDate)}`;
     }
 
-    // Function to calculate and render the results based on inputs and view mode
     function calculateDates() {
-        const dateInput = document.getElementById('lastDate').value;
+        const dateInput = document.getElementById('lastDate');
         const earlyDays = parseInt(document.querySelector('input[name="earlyDays"]:checked').value, 10);
         const verbiageSelection = document.querySelector('input[name="verbiage"]:checked').value;
         const viewMode = document.querySelector('input[name="viewMode"]:checked').value;
         
-        // Custom supply default to 15 if empty/invalid
-        let customSupply = parseInt(document.getElementById('customSupply').value, 10);
+        let customSupply = parseInt(document.getElementById('customSupplyTop').value, 10);
         if (isNaN(customSupply) || customSupply < 1) customSupply = 1;
 
         const resultsWrapper = document.getElementById('resultsWrapper');
         const emptyState = document.getElementById('emptyState');
 
-        if (!dateInput) {
+        if (!dateInput.value) {
             resultsWrapper.style.display = 'none';
             emptyState.style.display = 'block';
             return;
         }
 
-        // Show the results section
         resultsWrapper.style.display = 'block';
         emptyState.style.display = 'none';
 
-        // Parse base date avoiding timezone shift
-        const [year, month, day] = dateInput.split('-').map(Number);
+        const [year, month, day] = dateInput.value.split('-').map(Number);
         const baseDate = new Date(year, month - 1, day);
 
-        // Tracker / Days Between
         const today = new Date();
         today.setHours(0, 0, 0, 0); 
         const diffTime = today.getTime() - baseDate.getTime();
@@ -441,32 +524,41 @@
             ? ', ok to dispense ' 
             : ', updated DND before to ';
 
-        // Generate Strings for all cards
+        let headerEarlyText;
+        if (earlyDays === 0) {
+            headerEarlyText = 'no days early';
+        } else if (earlyDays === 1) {
+            headerEarlyText = '1 day early';
+        } else {
+            headerEarlyText = `${earlyDays} days early`;
+        }
+        const headerVerbiageText = verbiageSelection === 'ok' ? 'ok' : 'update DND';
+        const headerSuffix = `with ${headerEarlyText} ${headerVerbiageText}`;
+
+        document.getElementById('header-30').innerText = `30 day ${headerSuffix}`;
+        document.getElementById('header-60').innerText = `60 day ${headerSuffix}`;
+        document.getElementById('header-90').innerText = `90 day ${headerSuffix}`;
+        document.getElementById('header-custom').innerText = `day ${headerSuffix}`;
+
         document.getElementById('text-30').innerText = getAnnotationString(baseDate, 30, earlyDays, verbiageText);
         document.getElementById('text-60').innerText = getAnnotationString(baseDate, 60, earlyDays, verbiageText);
         document.getElementById('text-90').innerText = getAnnotationString(baseDate, 90, earlyDays, verbiageText);
         document.getElementById('text-custom').innerText = getAnnotationString(baseDate, customSupply, earlyDays, verbiageText);
 
-        // Control Visibility based on selected mode
         document.getElementById('card-30').style.display = (viewMode === 'all' || viewMode === '30') ? 'block' : 'none';
         document.getElementById('card-60').style.display = (viewMode === 'all' || viewMode === '60') ? 'block' : 'none';
         document.getElementById('card-90').style.display = (viewMode === 'all' || viewMode === '90') ? 'block' : 'none';
         document.getElementById('card-custom').style.display = (viewMode === 'all' || viewMode === 'custom') ? 'block' : 'none';
     }
 
-    // Handles copy event by grabbing innerText directly from the DOM ID rather than rebuilding it
     function copyText(button, textId) {
         const textToCopy = document.getElementById(textId).innerText;
-        
         navigator.clipboard.writeText(textToCopy).then(() => {
-            // Reset all buttons
             const allButtons = document.querySelectorAll('.copy-btn');
             allButtons.forEach(btn => {
                 btn.innerText = 'Copy';
                 btn.classList.remove('copied');
             });
-
-            // Set clicked button
             button.innerText = 'Copied!';
             button.classList.add('copied');
         }).catch(err => {
@@ -475,28 +567,64 @@
         });
     }
 
-    // Initialize the app 
     window.addEventListener('DOMContentLoaded', () => {
         const today = new Date();
         document.getElementById('todayDisplay').innerText = `Today: ${formatDate(today, false)}`;
 
-        const pastDate = new Date();
-        pastDate.setMonth(pastDate.getMonth() - 1);
-        const yyyy = pastDate.getFullYear();
-        const mm = String(pastDate.getMonth() + 1).padStart(2, '0');
-        const dd = String(pastDate.getDate()).padStart(2, '0');
+        const topCustomInput = document.getElementById('customSupplyTop');
+        const bottomCustomInput = document.getElementById('customSupplyBottom');
+        const viewCustomRadio = document.getElementById('viewCustom');
+        const dateInput = document.getElementById('lastDate');
+
+        topCustomInput.addEventListener('input', (e) => {
+            bottomCustomInput.value = e.target.value;
+            if (!viewCustomRadio.checked) {
+                viewCustomRadio.checked = true;
+                viewCustomRadio.dispatchEvent(new Event('change')); 
+            } else {
+                calculateDates();
+            }
+        });
         
-        document.getElementById('lastDate').value = `${yyyy}-${mm}-${dd}`;
-        
+        topCustomInput.addEventListener('click', (e) => {
+            if (!viewCustomRadio.checked) {
+                viewCustomRadio.checked = true;
+                viewCustomRadio.dispatchEvent(new Event('change')); 
+            }
+            e.stopPropagation(); 
+        });
+
+        bottomCustomInput.addEventListener('input', (e) => {
+            topCustomInput.value = e.target.value;
+            calculateDates();
+        });
+
+        dateInput.addEventListener('wheel', (e) => {
+            e.preventDefault(); 
+            const direction = e.deltaY < 0 ? 1 : -1;
+            adjustBaseDate(direction);
+        }, { passive: false });
+
+        setDateMonthsAgo(1);
         calculateDates();
     });
 
-    // Event Listeners for seamless updates
     document.getElementById('lastDate').addEventListener('change', calculateDates);
-    document.getElementById('customSupply').addEventListener('input', calculateDates);
     
     document.querySelectorAll('input[name="viewMode"]').forEach(radio => {
-        radio.addEventListener('change', calculateDates);
+        radio.addEventListener('change', (e) => {
+            if (document.getElementById('autoSyncDate').checked) {
+                const mode = e.target.value;
+                if (mode === '60') {
+                    setDateMonthsAgo(2);
+                } else if (mode === '90') {
+                    setDateMonthsAgo(3);
+                } else {
+                    setDateMonthsAgo(1);
+                }
+            }
+            calculateDates();
+        });
     });
 
     document.querySelectorAll('input[name="earlyDays"]').forEach(radio => {
@@ -510,3 +638,4 @@
 
 </body>
 </html>
+    

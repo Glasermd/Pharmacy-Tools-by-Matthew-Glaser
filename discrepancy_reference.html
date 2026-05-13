@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy DOS Custom Clinical Reference Guide</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 1100px; /* Widened to accommodate the new column */
+            margin: 0 auto; 
+            background-color: #f4f7f6; 
+            color: #333; 
+            line-height: 1.6;
+        }
+        
+        h1 { color: #0056b3; border-bottom: 3px solid #ccc; padding-bottom: 10px; margin-top: 0; }
+        h2 { color: #333; margin-top: 40px; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+        h3 { color: #0056b3; margin-top: 25px; }
+        
+        .validation-note {
+            font-size: 0.9em;
+            color: #555;
+            font-style: italic;
+            margin-bottom: 15px;
+            background: #e9ecef;
+            padding: 10px;
+            border-left: 4px solid #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+            vertical-align: top;
+        }
+        
+        th {
+            background-color: #0056b3;
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f5f9; }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+            color: #0056b3;
+        }
+        
+        .data-link {
+            display: inline-block;
+            background-color: #e3f2fd;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #b8daff;
+            font-size: 0.95em;
+        }
+        .data-link:hover {
+            background-color: #cce5ff;
+            text-decoration: none;
+        }
+
+        .internal-link {
+            font-size: 0.85em;
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ffeeba;
+            margin-left: 5px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+        .internal-link:hover {
+            background-color: #ffe8a1;
+            text-decoration: none;
+            color: #856404;
+        }
+
+        .appendix-box {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 5px solid #fd7e14;
+            margin-top: 20px;
+        }
+
+        /* Nav and Footer Styles */
+        .top-nav { margin-bottom: 25px; }
+        
+        .dashboard-btn { 
+            display: inline-block; 
+            padding: 10px 15px; 
+            background-color: #343a40; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            transition: 0.2s; 
+        }
+        .dashboard-btn:hover { background-color: #23272b; color: white; text-decoration: none; }
+
+        .credits {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #555;
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+        }
+        .disclaimer {
+            font-size: 11px;
+            color: #777;
+            margin-top: 10px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.4;
+        }
+        .dashboard-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 16px;
+            background-color: #f8f9fa;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .dashboard-link:hover {
+            background-color: #e2e6ea;
+            color: #0056b3;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <a href="dos_calculator.html" class="dashboard-btn">← Back to DOS Calculator</a>
+    </div>
+
+    <h1>Pharmacy DOS Custom Clinical Reference Guide</h1>
+    <p>This document serves as an independent clinical reference guide for Days of Supply (DOS) calculations. Click any highlighted data point to open an external verification search, or click the yellow discrepancy links to review operational billing rationale.</p>
+
+    <h2>1. Insulin Pens (In-Use Expiration & Priming Constants)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Concentration</th>
+                <th>Priming Units</th>
+                <th>In-Use Expiration</th>
+                <th>Data Source / Rationale</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Humalog KwikPen</strong></td>
+                <td>U-100 / U-200</td>
+                <td><a href="https://www.google.com/search?q=Humalog+KwikPen+Instructions+for+Use+prime+units#:~:text=2%20units" target="_blank" class="data-link">2 Units</a></td>
+                <td><a href="https://www.google.com/search?q=Humalog+KwikPen+package+insert+room+temperature+days#:~:text=28%20days" target="_blank" class="data-link">28 Days</a></td>
+                <td>Manufacturer Package Insert (PI)</td>
+            </tr>
+            <tr>
+                <td><strong>Humulin 70/30 KwikPen</strong></td>
+                <td>U-100</td>
+                <td><a href="https://www.google.com/search?q=Humulin+70/30+KwikPen+Instructions+for+Use+prime+units#:~:text=2%20units" target="_blank" class="data-link">2 Units</a></td>
+                <td><a href="https://www.google.com/search?q=Humulin+70/30+KwikPen+package+insert+room+temperature+days#:~:text=10%20days" target="_blank" class="data-link">10 Days</a></td>
+                <td>Manufacturer Package Insert (PI)</td>
+            </tr>
+            <tr>
+                <td><strong>Lantus Solostar</strong></td>
+                <td>U-100</td>
+                <td><a href="https://www.google.com/search?q=Lantus+Solostar+Instructions+for+Use+prime+units#:~:text=2%20units" target="_blank" class="data-link">2 Units</a></td>
+                <td><a href="https://www.google.com/search?q=Lantus+Solostar+package+insert+room+temperature+days#:~:text=28%20days" target="_blank" class="data-link">28 Days</a></td>
+                <td>Manufacturer Package Insert (PI)</td>
+            </tr>
+            <tr>
+                <td><strong>Novolog FlexPen</strong></td>
+                <td>U-100</td>
+                <td><a href="https://www.google.com/search?q=Novolog+FlexPen+Instructions+for+Use+prime+units#:~:text=2%20units" target="_blank" class="data-link">2 Units</a></td>
+                <td><a href="https://www.google.com/search?q=Novolog+FlexPen+package+insert+room+temperature+days#:~:text=28%20days" target="_blank" class="data-link">28 Days</a></td>
+                <td>Manufacturer Package Insert (PI)</td>
+            </tr>
+            <tr>
+                <td><strong>Toujeo Solostar</strong></td>
+                <td>U-300</td>
+                <td><a href="https://www.google.com/search?q=Toujeo+Solostar+Instructions+for+Use+prime+units#:~:text=3%20units" target="_blank" class="data-link">3 Units</a></td>
+                <td><a href="https://www.google.com/search?q=Toujeo+Solostar+package+insert+room+temperature+days#:~:text=56%20days" target="_blank" class="data-link">56 Days</a></td>
+                <td>Manufacturer Package Insert (PI)</td>
+            </tr>
+            <tr>
+                <td><strong>Toujeo Max Solostar</strong></td>
+                <td>U-300</td>
+                <td><a href="https://www.google.com/search?q=Toujeo+Max+Solostar+Instructions+for+Use+prime+units#:~:text=4%20units" target="_blank" class="data-link">4 Units</a></td>
+                <td><a href="https://www.google.com/search?q=Toujeo+Max+Solostar+package+insert+room+temperature+days#:~:text=56%20days" target="_blank" class="data-link">56 Days</a></td>
+                <td>Manufacturer Package Insert (PI). <br><em>Note: Differentiated from standard 3-unit Toujeo prime.</em></td>
+            </tr>
+            <tr>
+                <td><strong>Tresiba FlexTouch</strong></td>
+                <td>U-100 / U-200</td>
+                <td><a href="https://www.google.com/search?q=Tresiba+FlexTouch+Instructions+for+Use+prime+units#:~:text=2%20units" target="_blank" class="data-link">2 Units</a></td>
+                <td><a href="https://www.google.com/search?q=Tresiba+FlexTouch+package+insert+room+temperature+days#:~:text=56%20days" target="_blank" class="data-link">56 Days</a></td>
+                <td>Manufacturer Package Insert (PI)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2. Insulin Vials (In-Use Expiration Constants)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Concentration</th>
+                <th>Vial Volume</th>
+                <th>In-Use Expiration</th>
+                <th>Data Source / Rationale</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Humalog / Novolog</strong></td>
+                <td>U-100</td>
+                <td>10 mL</td>
+                <td><a href="https://www.google.com/search?q=Humalog+vial+package+insert+room+temperature+days#:~:text=28%20days" target="_blank" class="data-link">28 Days</a></td>
+                <td>Manufacturer Package Insert (PI)</td>
+            </tr>
+            <tr>
+                <td><strong>Lantus</strong></td>
+                <td>U-100</td>
+                <td>10 mL</td>
+                <td><a href="https://www.google.com/search?q=Lantus+vial+package+insert+room+temperature+days#:~:text=28%20days" target="_blank" class="data-link">28 Days</a></td>
+                <td>Manufacturer Package Insert (PI)</td>
+            </tr>
+            <tr>
+                <td><strong>Humulin N / R / 70/30</strong></td>
+                <td>U-100</td>
+                <td>10 mL</td>
+                <td><a href="https://www.google.com/search?q=Humulin+vial+package+insert+room+temperature+days#:~:text=31%20days" target="_blank" class="data-link">31 Days</a></td>
+                <td>Manufacturer Package Insert (PI)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>3. Ophthalmic / Otic Solutions (Drops per mL)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Drops per mL</th>
+                <th>Noted In-Use Expiration</th>
+                <th>Data Source / Rationale</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Standard Industry Default</strong></td>
+                <td><span class="data-link">20 drops/mL</span></td>
+                <td>-</td>
+                <td>Corporate SOP Matrix. Base default for unspecified solutions.</td>
+            </tr>
+            <tr>
+                <td><strong>Alrex 0.2%</strong></td>
+                <td><a href="https://www.google.com/search?q=Alrex+ophthalmic+drops+per+mL+billing+guidelines#:~:text=32" target="_blank" class="data-link">32 drops/mL</a></td>
+                <td>-</td>
+                <td>Corporate SOP Matrix</td>
+            </tr>
+            <tr>
+                <td><strong>Brimonidine 0.2%</strong></td>
+                <td><a href="https://www.google.com/search?q=Brimonidine+ophthalmic+drops+per+mL+billing#:~:text=30" target="_blank" class="data-link">30 drops/mL</a></td>
+                <td>-</td>
+                <td>Corporate SOP Matrix</td>
+            </tr>
+            <tr>
+                <td><strong>Latanoprost (Greenstone)</strong></td>
+                <td><a href="https://www.google.com/search?q=Latanoprost+Greenstone+drops+per+mL+billing#:~:text=20" target="_blank" class="data-link">20 drops/mL</a></td>
+                <td><a href="https://www.google.com/search?q=Latanoprost+package+insert+room+temperature+opened+days#:~:text=42" target="_blank" class="data-link">42 Days</a></td>
+                <td>Corporate SOP Matrix. Capped at 20 drops/mL to prevent "Refill Too Soon" rejections despite 33 drop/mL PI math. <br><a href="#discrepancy-appendix" class="internal-link">See Discrepancy Note 1</a></td>
+            </tr>
+            <tr>
+                <td><strong>Latanoprost (Bausch/Sandoz)</strong></td>
+                <td><a href="https://www.google.com/search?q=Latanoprost+Bausch+Sandoz+drops+per+mL+billing#:~:text=36" target="_blank" class="data-link">36 drops/mL</a></td>
+                <td><a href="https://www.google.com/search?q=Latanoprost+package+insert+room+temperature+opened+days#:~:text=42" target="_blank" class="data-link">42 Days</a></td>
+                <td>Corporate SOP Matrix / PBM Standard. Adjusted based on physical dropper tip variance. <br><a href="#discrepancy-appendix" class="internal-link">See Discrepancy Note 1</a></td>
+            </tr>
+            <tr>
+                <td><strong>Lotemax 0.5% Gel / Loteprednol 0.5%</strong></td>
+                <td><a href="https://www.google.com/search?q=Lotemax+Gel+drops+per+gram+billing#:~:text=25" target="_blank" class="data-link">25 drops/g</a></td>
+                <td>-</td>
+                <td>Corporate SOP Matrix</td>
+            </tr>
+            <tr>
+                <td><strong>Miebo</strong></td>
+                <td><a href="https://www.google.com/search?q=Miebo+package+insert+micro+liter+drop+size#:~:text=90" target="_blank" class="data-link">90 drops/mL</a></td>
+                <td>-</td>
+                <td>Manufacturer Package Insert (PI). Explicitly states 11 µL micro-drop volume.</td>
+            </tr>
+            <tr>
+                <td><strong>Timolol Maleate 0.5% / Timoptic</strong></td>
+                <td><a href="https://www.google.com/search?q=Timoptic+ophthalmic+drops+per+mL+billing#:~:text=32" target="_blank" class="data-link">32 drops/mL</a></td>
+                <td>-</td>
+                <td>Corporate SOP Matrix</td>
+            </tr>
+            <tr>
+                <td><strong>Vevye 0.1%</strong></td>
+                <td><a href="https://www.google.com/search?q=Vevye+package+insert+drop+volume#:~:text=100" target="_blank" class="data-link">100 drops/mL</a></td>
+                <td>-</td>
+                <td>Manufacturer Package Insert (PI). Explicitly states 0.01 mL drop volume.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>4. Topicals (Fixed Exception Limits)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Medication / Formulation</th>
+                <th>Standard Dispense Quantity</th>
+                <th>Maximum Days of Supply</th>
+                <th>Data Source / Rationale</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Standard Creams/Ointments</strong></td>
+                <td>Varies</td>
+                <td>Matrix Tiered</td>
+                <td>Corporate SOP Default Matrix (e.g., 30g = 30 Days). <br><a href="#discrepancy-appendix" class="internal-link">See Discrepancy Note 2</a></td>
+            </tr>
+            <tr>
+                <td><strong>Cabtreo Gel</strong></td>
+                <td>50 g</td>
+                <td><a href="https://www.google.com/search?q=Cabtreo+Gel+maximum+days+supply+billing+limit+50g#:~:text=70" target="_blank" class="data-link">70 Days</a></td>
+                <td>Corporate Exception Matrix / PBM Hard Cap</td>
+            </tr>
+            <tr>
+                <td><strong>Carac 0.5% Cream</strong></td>
+                <td>30 g</td>
+                <td><a href="https://www.google.com/search?q=Carac+Cream+maximum+days+supply+billing+limit+30g#:~:text=30" target="_blank" class="data-link">30 Days</a></td>
+                <td>Corporate Exception Matrix / PBM Hard Cap</td>
+            </tr>
+            <tr>
+                <td><strong>Jublia</strong></td>
+                <td>4 mL / 8 mL</td>
+                <td><a href="https://www.google.com/search?q=Jublia+maximum+days+supply+billing+limit+4mL#:~:text=30" target="_blank" class="data-link">30 Days</a> / 60 Days</td>
+                <td>Corporate Exception Matrix / PBM Hard Cap</td>
+            </tr>
+            <tr>
+                <td><strong>Kwell / Ovide (Lindane/Malathion)</strong></td>
+                <td>60 mL</td>
+                <td><a href="https://www.google.com/search?q=Ovide+lotion+maximum+days+supply+billing+limit+60mL#:~:text=7" target="_blank" class="data-link">7 Days</a></td>
+                <td>Corporate Exception Matrix. Restricted due to acute treatment regimen.</td>
+            </tr>
+            <tr>
+                <td><strong>Voltaren Gel</strong></td>
+                <td>100 g</td>
+                <td><a href="https://www.google.com/search?q=Voltaren+Gel+maximum+days+supply+billing+limit+100g#:~:text=7" target="_blank" class="data-link">7 Days</a></td>
+                <td>Corporate Exception Matrix / PBM Hard Cap</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2 id="discrepancy-appendix">Appendix A: Understanding Billing Discrepancies (SOP vs. Package Insert)</h2>
+    <div class="appendix-box">
+        <p>In pharmacy operations, Days of Supply (DOS) calculations must routinely bridge the gap between theoretical clinical math (found in FDA package inserts) and rigid corporate/PBM billing standards designed to prevent audit chargebacks. The calculator tool is hardcoded to reflect <strong>billing compliance requirements</strong> rather than pure clinical math when discrepancies exist.</p>
+        
+        <h3>Note 1: The Latanoprost Dropper Tip Variance</h3>
+        <p>A classic example of clinical math conflicting with billing SOPs is generic Latanoprost. According to the FDA package insert (which ANDA generics must copy from the brand-name Xalatan), one drop contains approximately 1.5 mcg of latanoprost from a 50 mcg/mL solution. Mathematically, <code>50 ÷ 1.5 = 33.33 drops per mL</code>.</p>
+        <ul>
+            <li><strong>Greenstone (Authorized Generic):</strong> Because Greenstone uses the exact same physical bottle as Xalatan, it theoretically dispenses ~33 drops/mL. However, corporate SOP matrices cap this calculation at <strong>20 drops/mL</strong>. This protective override accounts for real-world patient administration errors (missing the eye, squeezing too hard) and prevents the patient from running out of medication early and facing a "Refill Too Soon" rejection.</li>
+            <li><strong>Bausch + Lomb / Sandoz (ANDA Generics):</strong> These manufacturers utilize distinct plastic dropper tips that physical "drop tests" have proven dispense a smaller drop volume. To maximize cost-savings, PBMs and corporate matrices force pharmacies to calculate these specific NDCs at <strong>36 drops/mL</strong>, overriding the text in the manufacturer's own package insert.</li>
+        </ul>
+
+        <h3>Note 2: Topical Exception Limits</h3>
+        <p>Unlike oral medications where quantity directly equals daily usage, topicals (creams, ointments, gels) are highly subjective. To mitigate massive audit liabilities from subjective estimations (e.g., "apply to affected area"), PBMs enforce strict Default Matrices and Exception Limits.</p>
+        <p>These limits represent the <strong>maximum allowable days of supply</strong> for a specific package size, regardless of the mathematically derived gram-per-day usage. Submitting a claim that stretches the DOS beyond these fixed exceptions often triggers a "Plan Limit Exceeded" rejection, requiring prior authorization to override.</p>
+    </div>
+
+    <div class="credits">
+        <strong>Designed by Matthew Glaser, PharmD</strong><br>
+        <em>Intended to standardize days of supply calculations and documentation</em>
+        <div class="disclaimer">
+            <strong>Disclaimer:</strong> This tool is provided "as is" under the MIT License. It is designed to assist with standardized calculations, but clinical verification and final dispensing accuracy remain the sole responsibility of the dispensing pharmacist.
+        </div>
+        <a href="dos_calculator.html" class="dashboard-link">← Back to DOS Calculator</a>
+    </div>
+
+</body>
+</html>
