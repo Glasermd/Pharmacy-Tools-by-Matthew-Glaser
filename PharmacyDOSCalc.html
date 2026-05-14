@@ -141,16 +141,7 @@
         <label for="insulinPenSelect">Select Medication:</label>
         <select id="insulinPenSelect" onchange="updatePenFields()">
             <option value="">-- Select Pen --</option>
-            <option value="2|28|100|3">Novolog FlexPen (U-100, 3mL) - 2U Prime / 28 Days</option>
-            <option value="2|28|100|3">Humalog KwikPen (U-100, 3mL) - 2U Prime / 28 Days</option>
-            <option value="2|28|200|3">Humalog KwikPen (U-200, 3mL) - 2U Prime / 28 Days</option>
-            <option value="2|10|100|3">Humulin 70/30 KwikPen (U-100, 3mL) - 2U Prime / 10 Days</option>
-            <option value="2|28|100|3">Lantus Solostar (U-100, 3mL) - 2U Prime / 28 Days</option>
-            <option value="3|56|300|1.5">Toujeo Solostar (U-300, 1.5mL) - 3U Prime / 56 Days</option>
-            <option value="4|56|300|3">Toujeo Max Solostar (U-300, 3mL) - 4U Prime / 56 Days</option>
-            <option value="2|56|100|3">Tresiba FlexTouch (U-100, 3mL) - 2U Prime / 56 Days</option>
-            <option value="2|56|200|3">Tresiba FlexTouch (U-200, 3mL) - 2U Prime / 56 Days</option>
-        </select>
+            </select>
 
         <label for="penQty">Number of Pens Dispensed:</label>
         <input type="number" id="penQty" placeholder="e.g., 5" oninput="updateMLFromPens()">
@@ -173,10 +164,7 @@
         <label for="insulinVialSelect">Select Medication:</label>
         <select id="insulinVialSelect" onchange="updateVialFields()">
             <option value="">-- Select Vial --</option>
-            <option value="0|28|100|10">Humalog / Novolog (U-100, 10mL) - 28 Days in-use</option>
-            <option value="0|31|100|10">Humulin N / R / 70/30 (U-100, 10mL) - 31 Days in-use</option>
-            <option value="0|28|100|10">Lantus (U-100, 10mL) - 28 Days in-use</option>
-        </select>
+            </select>
 
         <label for="vialQty">Number of Vials Dispensed:</label>
         <input type="number" id="vialQty" placeholder="e.g., 1" oninput="updateMLFromVials()">
@@ -196,13 +184,7 @@
         <label for="inhalerSizeSelect">Package Size (Actuations/Doses):</label>
         <select id="inhalerSizeSelect" onchange="updateInhalerSize()">
             <option value="">-- Select Size --</option>
-            <option value="200">200 doses (e.g., standard albuterol)</option>
-            <option value="165">165 doses</option>
-            <option value="120">120 doses (e.g., standard fluticasone)</option>
-            <option value="60">60 doses</option>
-            <option value="30">30 doses</option>
-            <option value="custom">Custom size...</option>
-        </select>
+            </select>
 
         <label for="inhalerTotalDoses">Actuations (Doses) in Device:</label>
         <input type="number" id="inhalerTotalDoses" value="200" oninput="triggerAutoCalc()">
@@ -224,35 +206,7 @@
         
         <label for="eyeProduct">Select Medication:</label>
         <select id="eyeProduct" onchange="updateEyeVolume()">
-            <option value="20|999|5" selected>Standard Drops (20 drops/mL) - Default 5mL</option>
-            <option value="32|999|5">Alrex 0.2% (32 drops/mL) - Default 5mL</option>
-            <option value="31|999|5">Atropine Sulf 1% (31 drops/mL) - Default 5mL</option>
-            <option value="33|999|10">Bepotastine / Bepreve 1.5% (33 drops/mL) - Default 10mL</option>
-            <option value="31|999|5">Besivance 0.6% (31 drops/mL) - Default 5mL</option>
-            <option value="30|999|5">Brimonidine 0.2% (30 drops/mL) - Default 5mL</option>
-            <option value="21|999|1.7">Bromfenac 0.07% (21 drops/mL) - Default 1.7mL</option>
-            <option value="31|999|5">Cyclopentolate 1% (31 drops/mL) - Default 5mL</option>
-            <option value="31|999|5">Dexamethasone 0.1% (31 drops/mL) - Default 5mL</option>
-            <option value="28|999|5">Diclofenac Sod 0.1% (28 drops/mL) - Default 5mL</option>
-            <option value="28|999|10">Dorzolamide 2% / Dorzolamide-Timolol (28 drops/mL) - Default 10mL</option>
-            <option value="32|999|5">Istalol 0.5% (32 drops/mL) - Default 5mL</option>
-            <option value="36|42|2.5">Latanoprost (Bausch/Sandoz) (36 drops/mL) - Default 2.5mL</option>
-            <option value="20|42|2.5">Latanoprost (Greenstone) (20 drops/mL) - Default 2.5mL</option>
-            <option value="32|999|5">Levobunolol 0.5% (32 drops/mL) - Default 5mL</option>
-            <option value="31|999|5">Lotemax 0.5% Susp / Loteprednol 0.2% Susp (31 drops/mL) - Default 5mL</option>
-            <option value="25|999|5">Lotemax 0.5% Gel / Loteprednol 0.5% Gel (25 drops/mL) - Default 5mL</option>
-            <option value="26.2|999|5">Lotemax SM 0.38% Gel (26.2 drops/mL) - Default 5mL</option>
-            <option value="24|999|2.5">Lumigan 0.01% (24 drops/mL) - Default 2.5mL</option>
-            <option value="90|999|3">Miebo (90 drops/mL) - Default 3mL</option>
-            <option value="19|999|3">Prolensa 0.07% (19 drops/mL) - Default 3mL</option>
-            <option value="29|999|5">Timolol 0.25% / 0.5% GF / Timoptic-XE (29 drops/mL) - Default 5mL</option>
-            <option value="32|999|5">Timolol Maleate 0.5% / Timoptic (32 drops/mL) - Default 5mL</option>
-            <option value="100|999|2">Vevye 0.1% (100 drops/mL) - Default 2mL</option>
-            <option value="32|56|2.5">Vyzulta 0.024% (32 drops/mL) - Default 2.5mL</option>
-            <option value="33|42|2.5">Xalatan 0.005% (33 drops/mL) - Default 2.5mL</option>
-            <option value="27|999|5">Zirgan 0.15% Gel (27 drops/mL) - Default 5mL</option>
-            <option value="32|999|5">Zylet (32 drops/mL) - Default 5mL</option>
-        </select>
+            </select>
 
         <label for="eyeDropSize">Bottle Size (mL):</label>
         <input type="number" id="eyeDropSize" value="5" oninput="triggerAutoCalc()">
@@ -280,8 +234,7 @@
         
         <label for="earProduct">Select Medication:</label>
         <select id="earProduct" onchange="updateEarVolume()">
-            <option value="20|999|10">Standard Drops (20 drops/mL) - Default 10mL</option>
-        </select>
+            </select>
 
         <label for="earDropSize">Bottle Size (mL):</label>
         <input type="number" id="earDropSize" value="10" oninput="triggerAutoCalc()">
@@ -309,21 +262,7 @@
         
         <label for="topicalType">Select Formulation / Product:</label>
         <select id="topicalType" onchange="triggerAutoCalc()">
-            <option value="cream">Standard: Creams, Ointments, Gels, Powders, Foams</option>
-            <option value="lotion">Standard: Lotions, Solutions, Shampoos</option>
-            <optgroup label="Specific Exceptions">
-                <option value="exc_cabtreo">Cabtreo Gel (50g) - 70 Days</option>
-                <option value="exc_carac">Carac 0.5% Cream (30g) - 30 Days</option>
-                <option value="exc_estrace">Estrace Cream (42.5g) - 90 Days</option>
-                <option value="exc_jublia">Jublia (4mL = 30 Days / 8mL = 60 Days)</option>
-                <option value="exc_lice">Kwell / Ovide (60mL) - 7 Days</option>
-                <option value="exc_penlac">Penlac Lacquer (6.6mL) - 30 Days</option>
-                <option value="exc_premarin">Premarin Cream (30g) - 90 Days</option>
-                <option value="exc_soolantra">Soolantra 1% Cream (45g) - 45 Days</option>
-                <option value="exc_voltaren">Voltaren Gel (100g) - 7 Days</option>
-                <option value="exc_santyl">Santyl 250U/GM Ointment</option>
-            </optgroup>
-        </select>
+            </select>
 
         <label for="topicalSize">Total Dispensed Quantity (grams or mL):</label>
         <input type="number" id="topicalSize" placeholder="e.g., 45" oninput="triggerAutoCalc()">
@@ -359,10 +298,87 @@
         </div>
     </div>
 
+    <script src="drug_database.js"></script>
+
     <script>
         // Global Variables
         var eyeMultiplier = 2; // Default to 'Both Eyes'
         var earMultiplier = 2; // Default to 'Both Ears'
+
+        // --- DATABASE INITIALIZATION ---
+        function populateDropdowns() {
+            // 1. Insulin Pens
+            const penSelect = document.getElementById("insulinPenSelect");
+            PHARMACY_DB.insulinPens.forEach(p => {
+                let opt = document.createElement('option');
+                opt.value = `${p.prime}|${p.inUse}|${p.unitsPerML}|${p.vol}`;
+                opt.innerHTML = p.label;
+                penSelect.appendChild(opt);
+            });
+
+            // 2. Insulin Vials
+            const vialSelect = document.getElementById("insulinVialSelect");
+            PHARMACY_DB.insulinVials.forEach(v => {
+                let opt = document.createElement('option');
+                opt.value = `${v.prime}|${v.inUse}|${v.unitsPerML}|${v.vol}`;
+                opt.innerHTML = v.label;
+                vialSelect.appendChild(opt);
+            });
+
+            // 3. Inhalers
+            const inhalerSelect = document.getElementById("inhalerSizeSelect");
+            PHARMACY_DB.inhalerSizes.forEach(i => {
+                let opt = document.createElement('option');
+                opt.value = i.value;
+                opt.innerHTML = i.label;
+                inhalerSelect.appendChild(opt);
+            });
+
+            // 4. Eye Drops (Updated to handle defaultFreq)
+            const eyeSelect = document.getElementById("eyeProduct");
+            PHARMACY_DB.eyeDrops.forEach(e => {
+                let opt = document.createElement('option');
+                let freq = e.defaultFreq ? e.defaultFreq : ""; 
+                opt.value = `${e.dropsPerML}|${e.inUse}|${e.defaultVol}|${freq}`;
+                opt.innerHTML = e.label;
+                if (e.isDefault) opt.selected = true;
+                eyeSelect.appendChild(opt);
+            });
+
+            // 5. Ear Drops
+            const earSelect = document.getElementById("earProduct");
+            PHARMACY_DB.earDrops.forEach(e => {
+                let opt = document.createElement('option');
+                opt.value = `${e.dropsPerML}|${e.inUse}|${e.defaultVol}`;
+                opt.innerHTML = e.label;
+                earSelect.appendChild(opt);
+            });
+
+            // 6. Topicals
+            const topicalSelect = document.getElementById("topicalType");
+            PHARMACY_DB.topicals.standard.forEach(t => {
+                let opt = document.createElement('option');
+                opt.value = t.value;
+                opt.innerHTML = t.label;
+                topicalSelect.appendChild(opt);
+            });
+
+            let optgroup = document.createElement('optgroup');
+            optgroup.label = "Specific Exceptions";
+            PHARMACY_DB.topicals.exceptions.forEach(t => {
+                let opt = document.createElement('option');
+                opt.value = t.value;
+                opt.innerHTML = t.label;
+                optgroup.appendChild(opt);
+            });
+            topicalSelect.appendChild(optgroup);
+        }
+
+        // Run setup immediately on load
+        window.onload = function() {
+            populateDropdowns();
+            showSection('insulinPenSection');
+        };
 
         // Central Auto-Calculate Engine
         function triggerAutoCalc() {
@@ -376,13 +392,11 @@
 
         // Global Reset Function
         function resetCalculator() {
-            // Reset numerical inputs
             var textInputs = document.querySelectorAll("input[type=number]");
             for(var i = 0; i < textInputs.length; i++) {
                 textInputs[i].value = "";
             }
             
-            // Reset dropdowns
             var selects = document.querySelectorAll("select");
             for(var i = 0; i < selects.length; i++) {
                 selects[i].selectedIndex = 0;
@@ -395,12 +409,12 @@
             document.getElementById('eyeDropSize').value = "5";
             document.getElementById('eyeDropQty').value = "1";
             document.getElementById('eyeDropPerAdmin').value = "1";
-            setEyeToggle(2); // Reset to both eyes
+            setEyeToggle(2); 
 
             document.getElementById('earDropSize').value = "10";
             document.getElementById('earDropQty').value = "1";
             document.getElementById('earDropPerAdmin').value = "4";
-            setEarToggle(2); // Reset to both ears
+            setEarToggle(2); 
 
             clearOutput();
         }
@@ -455,7 +469,7 @@
 
         function displayOutput(hasProjections) {
             document.getElementById("outputSection").style.display = "block";
-            resetCopyButtons(); // Ensure clean slate for text rendering
+            resetCopyButtons(); 
             
             if (hasProjections) {
                 document.getElementById("projectionContainer").style.display = "block";
@@ -479,7 +493,7 @@
             copyText.select();
             document.execCommand("copy");
             
-            resetCopyButtons(); // Clear active state from any other copy button
+            resetCopyButtons(); 
             
             var btn = document.getElementById(btnId);
             if (btn) {
@@ -500,7 +514,7 @@
             document.execCommand("copy");
             document.body.removeChild(tempTextArea);
             
-            resetCopyButtons(); // Clear active state from any other copy button
+            resetCopyButtons(); 
             
             var btn = document.getElementById("btn-copy-all");
             if (btn) {
@@ -522,17 +536,14 @@
             
             var selectedText = dropdown.options[dropdown.selectedIndex].text.toLowerCase();
             
-            // Smart Defaults for Pen Quantity (1 Box)
             if (selectedText.includes("toujeo max")) {
                 document.getElementById("penQty").value = 2;
             } else if (selectedText.includes("toujeo")) {
                 document.getElementById("penQty").value = 3;
             } else {
-                // Lantus, Humalog, Novolog, Humulin, Tresiba
                 document.getElementById("penQty").value = 5;
             }
             
-            // Smart Defaults for Frequency
             var freqInput = document.getElementById("penFreq");
             if (selectedText.includes("lantus") || selectedText.includes("toujeo") || selectedText.includes("tresiba")) {
                 freqInput.value = 1;
@@ -542,7 +553,6 @@
                 freqInput.value = "";
             }
 
-            // Generate ML from newly set Pen Qty and then auto-calc
             updateMLFromPens();
         }
 
@@ -611,7 +621,6 @@
             var dos90 = Math.floor(packages90 * actualDaysPerPen);
             var vol90 = packages90 * volumePerPen;
 
-            // Pluralization
             let strPen = numberOfPens === 1 ? "pen" : "pens";
             let strUnitDose = dosePerAdmin === 1 ? "unit" : "units";
             let strUnitPrime = primeUnits === 1 ? "unit" : "units";
@@ -648,11 +657,7 @@
                 triggerAutoCalc();
                 return;
             }
-            
-            // Smart Defaults for Vials
             document.getElementById("vialQty").value = 1;
-            
-            // Generate ML from newly set Vial Qty
             updateMLFromVials();
         }
 
@@ -696,7 +701,6 @@
             }
             
             var data = selectVal.split("|");
-            var primeUnits = 0; 
             var inUseDays = parseFloat(data[1]);
             var unitsPerML = parseFloat(data[2]);
             var volumePerVial = parseFloat(data[3]);
@@ -719,7 +723,6 @@
             var dos90 = Math.floor(packages90 * actualDaysPerVial);
             var vol90 = packages90 * volumePerVial;
 
-            // Pluralization
             let strVial = numberOfVials === 1 ? "vial" : "vials";
 
             var annotation = `${numberOfVials} ${strVial}, each contains ${volumePerVial} mL (${unitsPerVial} units) = ${unitsPerVial * numberOfVials} units\n`;
@@ -754,7 +757,6 @@
             if (select !== "custom" && select !== "") {
                 dosesInput.value = select;
                 
-                // Smart Defaults for Inhalers
                 if (select === "200") {
                     puffsInput.value = 2;
                     freqInput.value = 6;
@@ -805,7 +807,6 @@
             if (packages90 === 0) packages90 = 1;
             var dos90 = packages90 * daysPerPackage;
 
-            // Pluralization
             let strDevice = packagesDispensed === 1 ? "device" : "devices";
             let strDoseTotal = totalDosesDispensed === 1 ? "dose" : "doses";
             let strPuff = puffsPerDose === 1 ? "puff/spray" : "puffs/sprays";
@@ -827,14 +828,23 @@
             displayOutput(true);
         }
 
-        // --- EYE DROPS LOGIC ---
+        // --- EYE DROPS LOGIC (Updated to handle defaultFreq) ---
         function updateEyeVolume() {
             var dropdown = document.getElementById("eyeProduct");
+            var freqInput = document.getElementById("eyeDropFreq");
+
             if(dropdown.value !== "") {
                 var data = dropdown.value.split("|");
                 document.getElementById("eyeDropSize").value = data[2];
+                
+                if(data[3] !== "") {
+                    freqInput.value = data[3];
+                } else {
+                    freqInput.value = "";
+                }
             } else {
                 document.getElementById("eyeDropSize").value = "";
+                freqInput.value = "";
             }
             triggerAutoCalc();
         }
@@ -1077,12 +1087,7 @@
             document.getElementById("formulaOutput").value = annotation;
             displayOutput(false);
         }
-
-        // Show default section on load
-        window.onload = function() {
-            showSection('insulinPenSection');
-        };
     </script>
 </body>
 </html>
-    
+  
