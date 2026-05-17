@@ -269,7 +269,8 @@
 
 <div class="nav-links">
     <a href="index.html" class="btn-outline">&larr; Dashboard</a>
-    <a href="DispenseDateCalc.html" class="btn-outline">Dispense Date Calculator &rarr;</a>
+    <a href="DispenseDateCalc.html" class="btn-outline">Dispense Date Calculator</a>
+    <a href="date-difference.html" class="btn-outline">Date Difference Calculator &rarr;</a>
 </div>
 
 <div class="credits">
@@ -393,18 +394,25 @@
                 
                 if (currentFill.date < expectedRunOutDate) {
                     const diffTime = expectedRunOutDate.getTime() - currentFill.date.getTime();
-                    const daysEarly = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                     
-                    totalAccumulatedDays += daysEarly;
+                    // The difference between the expected run out and the fill date IS the total banked buffer.
+                    const totalDaysBankedAtThisPoint = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                     
-                    expectedRunOutDate = new Date(currentFill.date);
-                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentFill.dos + totalAccumulatedDays);
+                    // Calculate how many NEW days early they filled compared to their previous bank
+                    const incrementalEarly = totalDaysBankedAtThisPoint - totalAccumulatedDays;
                     
-                    details += `-> ${daysEarly} days early\n`;
+                    // Update running total
+                    totalAccumulatedDays = totalDaysBankedAtThisPoint;
+                    
+                    // The new run out date just extends the current running target by the new DOS
+                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentFill.dos);
+                    
+                    details += `-> ${incrementalEarly} days early this fill (${totalAccumulatedDays} days total banked)\n`;
                 } else {
-                    details += `-> On time/Late\n`;
+                    details += `-> On time/Late (0 days banked)\n`;
                     expectedRunOutDate = new Date(currentFill.date);
                     expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentFill.dos);
+                    totalAccumulatedDays = 0;
                 }
             }
 
@@ -428,11 +436,17 @@
 
                 if (currentFill.date < expectedRunOutDate) {
                     const diffTime = expectedRunOutDate.getTime() - currentFill.date.getTime();
-                    const daysEarly = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                     
-                    const unitsBanked = daysEarly * currentDose;
-                    totalAccumulatedUnits += unitsBanked;
+                    // Total days banked BEFORE calculating the new fill
+                    const totalDaysBankedAtThisPoint = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    // Convert days back to units using the OLD dose
+                    const unitsRemaining = totalDaysBankedAtThisPoint * currentDose;
+                    
+                    // Set the bank exactly to what is left over
+                    totalAccumulatedUnits = unitsRemaining;
 
+                    // Add new qty to the bank, calculate using NEW dose
                     let unitsOnHand = totalAccumulatedUnits + currentFill.qty;
                     currentDose = currentFill.dose; 
                     
@@ -441,10 +455,10 @@
                     expectedRunOutDate = new Date(currentFill.date);
                     expectedRunOutDate.setDate(expectedRunOutDate.getDate() + newDos);
 
-                    let cleanBanked = unitsBanked % 1 === 0 ? unitsBanked : unitsBanked.toFixed(1);
+                    let cleanRemaining = unitsRemaining % 1 === 0 ? unitsRemaining : unitsRemaining.toFixed(1);
                     let cleanOnHand = unitsOnHand % 1 === 0 ? unitsOnHand : unitsOnHand.toFixed(1);
 
-                    details += `-> ${daysEarly} days early (${cleanBanked} units banked).\n`;
+                    details += `-> ${totalDaysBankedAtThisPoint} days early vs expected run-out (${cleanRemaining} previous units banked).\n`;
                     details += `   Total units on hand: ${cleanOnHand}. Adjusted supply: ${newDos} days.\n`;
                 } else {
                     details += `-> On time/Late (0 units banked).\n`;

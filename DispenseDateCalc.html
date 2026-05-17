@@ -86,10 +86,28 @@
         .date-control {
             display: flex;
             gap: 8px;
+            align-items: center;
+            position: relative; /* Added for tooltip positioning */
         }
         
         .date-control input[type="date"] {
             flex-grow: 1;
+        }
+        
+        .step-select {
+            padding: 10px 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #475569;
+            background-color: #f8fafc;
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .step-select:focus {
+            outline: none;
+            border-color: var(--primary);
         }
 
         .date-btn {
@@ -99,6 +117,8 @@
             color: #475569;
             font-size: 0.9rem;
             width: 42px;
+            height: 100%;
+            min-height: 42px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -108,6 +128,38 @@
 
         .date-btn:hover {
             background-color: #e2e8f0;
+        }
+
+        /* Tooltip Styling */
+        .hover-tooltip {
+            position: absolute;
+            bottom: 115%;
+            left: 10px;
+            background-color: #1e293b;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .hover-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 20px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+
+        .hover-tooltip.show {
+            opacity: 1;
         }
 
         .checkbox-label {
@@ -324,8 +376,13 @@
         <label for="lastDate">Last Dispensed Date:</label>
         <div class="date-control">
             <input type="date" id="lastDate">
-            <button type="button" class="date-btn" onclick="adjustBaseDate(1)" title="Add 1 Day">▲</button>
-            <button type="button" class="date-btn" onclick="adjustBaseDate(-1)" title="Subtract 1 Day">▼</button>
+            <div id="scrollTooltip" class="hover-tooltip">Scroll mouse wheel to change by day</div>
+            <button type="button" class="date-btn" onclick="adjustBaseDate(1)" title="Increase">▲</button>
+            <button type="button" class="date-btn" onclick="adjustBaseDate(-1)" title="Decrease">▼</button>
+            <select id="arrowStepMode" class="step-select">
+                <option value="month" selected>Month</option>
+                <option value="day">Day</option>
+            </select>
         </div>
         <label class="checkbox-label">
             <input type="checkbox" id="autoSyncDate"> Auto-adjust date based on display option
@@ -425,7 +482,8 @@
 
 <div class="nav-links">
     <a href="index.html" class="btn-outline">&larr; Dashboard</a>
-    <a href="AccumulationCalc.html" class="btn-outline">Accumulation Calculator &rarr;</a>
+    <a href="AccumulationCalc.html" class="btn-outline">Accumulation Calculator</a>
+    <a href="date-difference.html" class="btn-outline">Date Difference Calculator &rarr;</a>
 </div>
 
 <div class="credits">
@@ -455,13 +513,20 @@
         document.getElementById('lastDate').value = `${yyyy}-${mm}-${dd}`;
     }
 
-    function adjustBaseDate(daysToAdd) {
+    // Passed 'true' as the second parameter to force scroll wheel to use Day increments
+    function adjustBaseDate(amount, forceDay = false) {
         const dateInput = document.getElementById('lastDate');
         if (!dateInput.value) return;
 
+        const stepMode = forceDay ? 'day' : document.getElementById('arrowStepMode').value;
         const [year, month, day] = dateInput.value.split('-').map(Number);
         const newDate = new Date(year, month - 1, day);
-        newDate.setDate(newDate.getDate() + daysToAdd);
+
+        if (stepMode === 'month') {
+            newDate.setMonth(newDate.getMonth() + amount);
+        } else {
+            newDate.setDate(newDate.getDate() + amount);
+        }
 
         const yyyy = newDate.getFullYear();
         const mm = String(newDate.getMonth() + 1).padStart(2, '0');
@@ -549,6 +614,13 @@
         document.getElementById('card-60').style.display = (viewMode === 'all' || viewMode === '60') ? 'block' : 'none';
         document.getElementById('card-90').style.display = (viewMode === 'all' || viewMode === '90') ? 'block' : 'none';
         document.getElementById('card-custom').style.display = (viewMode === 'all' || viewMode === 'custom') ? 'block' : 'none';
+
+        // Reset all copy buttons to their default state whenever the math changes
+        const allButtons = document.querySelectorAll('.copy-btn');
+        allButtons.forEach(btn => {
+            btn.innerText = 'Copy';
+            btn.classList.remove('copied');
+        });
     }
 
     function copyText(button, textId) {
@@ -575,6 +647,8 @@
         const bottomCustomInput = document.getElementById('customSupplyBottom');
         const viewCustomRadio = document.getElementById('viewCustom');
         const dateInput = document.getElementById('lastDate');
+        const scrollTooltip = document.getElementById('scrollTooltip');
+        let tooltipTimer;
 
         topCustomInput.addEventListener('input', (e) => {
             bottomCustomInput.value = e.target.value;
@@ -599,10 +673,26 @@
             calculateDates();
         });
 
+        // Hover Tooltip Logic
+        dateInput.addEventListener('mouseenter', () => {
+            scrollTooltip.classList.add('show');
+            clearTimeout(tooltipTimer);
+            // Hide tooltip automatically after 3 seconds
+            tooltipTimer = setTimeout(() => {
+                scrollTooltip.classList.remove('show');
+            }, 3000); 
+        });
+
+        dateInput.addEventListener('mouseleave', () => {
+            scrollTooltip.classList.remove('show');
+            clearTimeout(tooltipTimer);
+        });
+
         dateInput.addEventListener('wheel', (e) => {
             e.preventDefault(); 
             const direction = e.deltaY < 0 ? 1 : -1;
-            adjustBaseDate(direction);
+            // Passed 'true' as the second parameter to force scroll wheel to use Day increments
+            adjustBaseDate(direction, true); 
         }, { passive: false });
 
         setDateMonthsAgo(1);
