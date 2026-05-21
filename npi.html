@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eGFD NPI Lookup Tool</title>
+    <style>
+        /* Clean, professional styling appropriate for a pharmacy workflow */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+            margin: 0;
+        }
+        .app-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #34495e;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        /* Styling for the results box */
+        #resultCard {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e8f4f8;
+            border-left: 5px solid #3498db;
+            border-radius: 4px;
+        }
+        .result-row {
+            margin-bottom: 10px;
+        }
+        .result-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        /* Error message styling */
+        #errorMessage {
+            display: none;
+            margin-top: 15px;
+            color: #c0392b;
+            background-color: #fdeaea;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h2>Prescriber Verification</h2>
+        
+        <div class="input-group">
+            <label for="npiInput">Enter 10-Digit NPI</label>
+            <input type="text" id="npiInput" placeholder="e.g., 1234567890" maxlength="10" autocomplete="off">
+        </div>
+        
+        <button id="searchBtn" onclick="fetchNPIData()">Lookup Prescriber</button>
+
+        <div id="errorMessage"></div>
+
+        <div id="resultCard">
+            <div class="result-row">
+                <span class="result-label">Name:</span> 
+                <span id="docName"></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Specialty:</span> 
+                <span id="docSpecialty"></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Address:</span> 
+                <span id="docAddress"></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Phone:</span> 
+                <span id="docPhone"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchNPIData() {
+            const npiInput = document.getElementById('npiInput').value.trim();
+            const resultCard = document.getElementById('resultCard');
+            const errorMessage = document.getElementById('errorMessage');
+            const searchBtn = document.getElementById('searchBtn');
+
+            // Reset view
+            resultCard.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            // Validate NPI (Must be exactly 10 digits)
+            const npiRegex = /^\d{10}$/;
+            if (!npiRegex.test(npiInput)) {
+                showError("Please enter a valid 10-digit NPI number.");
+                return;
+            }
+
+            // Update UI to show loading state
+            searchBtn.innerText = "Searching...";
+            searchBtn.disabled = true;
+
+            // Federal NPPES API URL
+            const apiUrl = `https://npiregistry.cms.hhs.gov/api/?version=2.1&number=${npiInput}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if (data.result_count > 0) {
+                    const provider = data.results[0];
+
+                    // Extract Name
+                    let name = "Name not found";
+                    if (provider.basic.organization_name) {
+                        name = provider.basic.organization_name;
+                    } else {
+                        const credential = provider.basic.credential ? `, ${provider.basic.credential}` : '';
+                        name = `${provider.basic.first_name} ${provider.basic.last_name}${credential}`;
+                    }
+
+                    // Extract Primary Specialty
+                    let specialty = "Specialty not listed";
+                    if (provider.taxonomies && provider.taxonomies.length > 0) {
+                        const primaryTax = provider.taxonomies.find(tax => tax.primary === true);
+                        if (primaryTax) {
+                            specialty = primaryTax.desc;
+                        }
+                    }
+
+                    // Extract Practice Address and Phone
+                    let address = "Address not found";
+                    let phone = "Phone not found";
+                    if (provider.addresses && provider.addresses.length > 0) {
+                        // Look specifically for the LOCATION address (ignoring MAILING)
+                        const location = provider.addresses.find(addr => addr.address_purpose === "LOCATION");
+                        if (location) {
+                            address = `${location.address_1}, ${location.city}, ${location.state} ${location.postal_code.substring(0, 5)}`;
+                            phone = location.telephone_number || "No phone listed";
+                        }
+                    }
+
+                    // Populate UI
+                    document.getElementById('docName').innerText = name;
+                    document.getElementById('docSpecialty').innerText = specialty;
+                    document.getElementById('docAddress').innerText = address;
+                    document.getElementById('docPhone').innerText = phone;
+
+                    // Show Results
+                    resultCard.style.display = 'block';
+                } else {
+                    showError("No active prescriber found for that NPI.");
+                }
+            } catch (error) {
+                console.error("API Error:", error);
+                showError("Network error. Could not connect to the NPI registry.");
+            } finally {
+                // Restore button state
+                searchBtn.innerText = "Lookup Prescriber";
+                searchBtn.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.innerText = message;
+            errorMessage.style.display = 'block';
+        }
+
+        // Allow pressing "Enter" key to trigger search
+        document.getElementById("npiInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                fetchNPIData();
+            }
+        });
+    </script>
+</body>
+</html>
