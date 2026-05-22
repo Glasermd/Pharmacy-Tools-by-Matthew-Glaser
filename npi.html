@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eGFD NPI Lookup Tool</title>
+    <title>eGFD Prescriber Lookup</title>
     <style>
-        /* Clean, professional styling appropriate for a pharmacy workflow */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f4f7f6;
             color: #333;
             display: flex;
             justify-content: center;
-            padding-top: 50px;
+            padding-top: 40px;
             margin: 0;
+            padding-bottom: 40px;
         }
         .app-container {
             background-color: #ffffff;
@@ -21,35 +21,75 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 500px;
+            max-width: 550px;
         }
         h2 {
             color: #2c3e50;
             margin-top: 0;
             border-bottom: 2px solid #3498db;
             padding-bottom: 10px;
-        }
-        .input-group {
             margin-bottom: 20px;
         }
-        label {
+        /* Toggle Switch Styling */
+        .toggle-group {
+            display: flex;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .toggle-group label {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 0;
+            border-right: 1px solid #ccc;
+            transition: background 0.2s;
+        }
+        .toggle-group label:last-child {
+            border-right: none;
+        }
+        .toggle-group input {
+            display: none;
+        }
+        .toggle-group input:checked + label {
+            background: #3498db;
+            color: white;
+        }
+        
+        /* Input Fields */
+        .input-row {
+            margin-bottom: 15px;
+        }
+        .input-row label {
             display: block;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             color: #34495e;
+            font-size: 0.9em;
         }
-        input[type="text"] {
+        input[type="text"], select {
             width: 100%;
             padding: 10px;
-            font-size: 16px;
+            font-size: 15px;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
         }
+        .name-grid {
+            display: flex;
+            gap: 10px;
+        }
+        .name-grid > div {
+            flex: 1;
+        }
         button {
             width: 100%;
             padding: 12px;
-            background-color: #3498db;
+            background-color: #2ecc71;
             color: white;
             border: none;
             border-radius: 4px;
@@ -57,176 +97,207 @@
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.2s;
+            margin-top: 10px;
         }
-        button:hover {
-            background-color: #2980b9;
-        }
-        button:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-        }
-        /* Styling for the results box */
-        #resultCard {
-            display: none;
-            margin-top: 25px;
-            padding: 20px;
+        button:hover { background-color: #27ae60; }
+        button:disabled { background-color: #95a5a6; cursor: not-allowed; }
+        
+        /* Results Styling */
+        #resultsContainer { margin-top: 25px; }
+        .result-card {
             background-color: #e8f4f8;
             border-left: 5px solid #3498db;
             border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 0.95em;
         }
-        .result-row {
-            margin-bottom: 10px;
+        .result-row { margin-bottom: 6px; }
+        .result-label { font-weight: 600; color: #2c3e50; }
+        .badge {
+            background: #34495e; color: white; padding: 3px 6px; 
+            border-radius: 3px; font-size: 0.8em; margin-left: 5px;
         }
-        .result-label {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        /* Error message styling */
+        
+        /* Error Message */
         #errorMessage {
-            display: none;
-            margin-top: 15px;
-            color: #c0392b;
-            background-color: #fdeaea;
-            padding: 10px;
-            border-radius: 4px;
-            font-weight: 600;
-            text-align: center;
+            display: none; margin-top: 15px; color: #c0392b;
+            background-color: #fdeaea; padding: 10px; border-radius: 4px;
+            font-weight: 600; text-align: center;
         }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <h2>Prescriber Verification</h2>
+        <h2>Prescriber Lookup</h2>
         
-        <div class="input-group">
-            <label for="npiInput">Enter 10-Digit NPI</label>
-            <input type="text" id="npiInput" placeholder="e.g., 1234567890" maxlength="10" autocomplete="off">
+        <div class="toggle-group">
+            <input type="radio" id="searchNPI" name="searchMode" value="npi" checked onchange="switchMode()">
+            <label for="searchNPI">Search by NPI</label>
+            
+            <input type="radio" id="searchName" name="searchMode" value="name" onchange="switchMode()">
+            <label for="searchName">Search by Name</label>
         </div>
         
-        <button id="searchBtn" onclick="fetchNPIData()">Lookup Prescriber</button>
+        <div id="npiModeFields">
+            <div class="input-row">
+                <label for="npiInput">10-Digit NPI Number</label>
+                <input type="text" id="npiInput" placeholder="e.g., 1234567890" maxlength="10">
+            </div>
+        </div>
+
+        <div id="nameModeFields" style="display: none;">
+            <div class="name-grid">
+                <div class="input-row">
+                    <label for="firstNameInput">First Name</label>
+                    <input type="text" id="firstNameInput" placeholder="First Name">
+                </div>
+                <div class="input-row">
+                    <label for="lastNameInput">Last Name</label>
+                    <input type="text" id="lastNameInput" placeholder="Last Name">
+                </div>
+            </div>
+            <div class="input-row">
+                <label for="stateInput">State (Required for Name Search)</label>
+                <select id="stateInput">
+                    <option value="">Select State...</option>
+                    <option value="CA">California</option>
+                    <option value="TX">Texas</option>
+                    <option value="FL">Florida</option>
+                    <option value="NY">New York</option>
+                    <option value="IL">New York</option>
+                    <option value="PA">Pennsylvania</option>
+                    <option value="NV">Nevada</option>
+                    <option value="OR">Nevada</option>
+                    <option value="AZ">Arizona</option>
+                    <option value="WA">Washington</option>
+                </select>
+            </div>
+        </div>
+        
+        <button id="searchBtn" onclick="fetchProviderData()">Search Registry</button>
 
         <div id="errorMessage"></div>
-
-        <div id="resultCard">
-            <div class="result-row">
-                <span class="result-label">Name:</span> 
-                <span id="docName"></span>
-            </div>
-            <div class="result-row">
-                <span class="result-label">Specialty:</span> 
-                <span id="docSpecialty"></span>
-            </div>
-            <div class="result-row">
-                <span class="result-label">Address:</span> 
-                <span id="docAddress"></span>
-            </div>
-            <div class="result-row">
-                <span class="result-label">Phone:</span> 
-                <span id="docPhone"></span>
-            </div>
-            <div class="result-row">
-                <span class="result-label">Last Updated:</span> 
-                <span id="docUpdated"></span>
-            </div>
-        </div>
+        
+        <div id="resultsContainer"></div>
     </div>
 
     <script>
-        async function fetchNPIData() {
-            const npiInput = document.getElementById('npiInput').value.trim();
-            const resultCard = document.getElementById('resultCard');
+        // Toggle the UI between NPI and Name search
+        function switchMode() {
+            const isNPI = document.getElementById('searchNPI').checked;
+            document.getElementById('npiModeFields').style.display = isNPI ? 'block' : 'none';
+            document.getElementById('nameModeFields').style.display = isNPI ? 'none' : 'block';
+            document.getElementById('resultsContainer').innerHTML = '';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        async function fetchProviderData() {
+            const isNPI = document.getElementById('searchNPI').checked;
+            const resultsContainer = document.getElementById('resultsContainer');
             const errorMessage = document.getElementById('errorMessage');
             const searchBtn = document.getElementById('searchBtn');
 
-            // Reset view
-            resultCard.style.display = 'none';
+            // Reset UI
+            resultsContainer.innerHTML = '';
             errorMessage.style.display = 'none';
 
-            // Validate NPI (Must be exactly 10 digits)
-            const npiRegex = /^\d{10}$/;
-            if (!npiRegex.test(npiInput)) {
-                showError("Please enter a valid 10-digit NPI number.");
-                return;
+            // Build the URL based on the selected mode
+            // Using the Vercel rewrite URL you setup earlier!
+            let apiUrl = `/api/npi?version=2.1&limit=10`; 
+
+            if (isNPI) {
+                const npi = document.getElementById('npiInput').value.trim();
+                if (!/^\d{10}$/.test(npi)) {
+                    showError("Please enter a valid 10-digit NPI.");
+                    return;
+                }
+                apiUrl += `&number=${npi}`;
+            } else {
+                const first = document.getElementById('firstNameInput').value.trim();
+                const last = document.getElementById('lastNameInput').value.trim();
+                const state = document.getElementById('stateInput').value;
+                
+                if (!last || !state) {
+                    showError("Last Name and State are required for a name search.");
+                    return;
+                }
+                apiUrl += `&first_name=${encodeURIComponent(first)}&last_name=${encodeURIComponent(last)}&state=${state}`;
             }
 
-            // Update UI to show loading state
+            // Loading state
             searchBtn.innerText = "Searching...";
             searchBtn.disabled = true;
 
-            // New Vercel Proxy URL (Bypasses CORS)
-            const apiUrl = `/api/npi?version=2.1&number=${npiInput}`;
-
-            
             try {
                 const response = await fetch(apiUrl);
                 const data = await response.json();
 
                 if (data.result_count > 0) {
-                    const provider = data.results[0];
-
-                    // Extract Name
-                    let name = "Name not found";
-                    if (provider.basic.organization_name) {
-                        name = provider.basic.organization_name;
-                    } else {
-                        const credential = provider.basic.credential ? `, ${provider.basic.credential}` : '';
-                        name = `${provider.basic.first_name} ${provider.basic.last_name}${credential}`;
-                    }
-
-                    // Extract Primary Specialty
-                    let specialty = "Specialty not listed";
-                    if (provider.taxonomies && provider.taxonomies.length > 0) {
-                        const primaryTax = provider.taxonomies.find(tax => tax.primary === true);
-                        if (primaryTax) {
-                            specialty = primaryTax.desc;
-                        }
-                    }
-
-                    // Extract Practice Address and Phone
-                    let address = "Address not found";
-                    let phone = "Phone not found";
-                    if (provider.addresses && provider.addresses.length > 0) {
-                        // Look specifically for the LOCATION address (ignoring MAILING)
-                        const location = provider.addresses.find(addr => addr.address_purpose === "LOCATION");
-                        if (location) {
-                            address = `${location.address_1}, ${location.city}, ${location.state} ${location.postal_code.substring(0, 5)}`;
-                            phone = location.telephone_number || "No phone listed";
-                        }
-                    }
-
-                    // Extract Last Updated Date
-                    let lastUpdated = "Unknown";
-                    if (provider.basic.last_updated) {
-                        // The API returns YYYY-MM-DD. This formats it as MM/DD/YYYY
-                        const dateParts = provider.basic.last_updated.split('-');
-                        if(dateParts.length === 3) {
-                            lastUpdated = `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}`;
-                        } else {
-                            lastUpdated = provider.basic.last_updated;
-                        }
-                    }
-
-                    // Populate UI
-                    document.getElementById('docName').innerText = name;
-                    document.getElementById('docSpecialty').innerText = specialty;
-                    document.getElementById('docAddress').innerText = address;
-                    document.getElementById('docPhone').innerText = phone;
-                    document.getElementById('docUpdated').innerText = lastUpdated;
-
-                    // Show Results
-                    resultCard.style.display = 'block';
+                    // Loop through results and create a card for each (Limit to 10 max)
+                    data.results.forEach(provider => {
+                        resultsContainer.appendChild(createResultCard(provider));
+                    });
                 } else {
-                    showError("No active prescriber found for that NPI.");
+                    showError("No matching prescribers found.");
                 }
             } catch (error) {
                 console.error("API Error:", error);
                 showError("Network error. Could not connect to the NPI registry.");
             } finally {
-                // Restore button state
-                searchBtn.innerText = "Lookup Prescriber";
+                searchBtn.innerText = "Search Registry";
                 searchBtn.disabled = false;
             }
+        }
+
+        // Helper function to parse provider JSON into a clean HTML card
+        function createResultCard(provider) {
+            // Extract Name
+            let name = "Name not found";
+            if (provider.basic.organization_name) {
+                name = provider.basic.organization_name;
+            } else {
+                const credential = provider.basic.credential ? `, ${provider.basic.credential}` : '';
+                name = `${provider.basic.first_name} ${provider.basic.last_name}${credential}`;
+            }
+
+            // Extract Specialty
+            let specialty = "Specialty not listed";
+            if (provider.taxonomies && provider.taxonomies.length > 0) {
+                const primaryTax = provider.taxonomies.find(tax => tax.primary === true);
+                if (primaryTax) { specialty = primaryTax.desc; }
+            }
+
+            // Extract Address & Phone
+            let address = "Address not found";
+            let phone = "No phone listed";
+            if (provider.addresses && provider.addresses.length > 0) {
+                const location = provider.addresses.find(addr => addr.address_purpose === "LOCATION");
+                if (location) {
+                    address = `${location.address_1}, ${location.city}, ${location.state} ${location.postal_code.substring(0, 5)}`;
+                    phone = location.telephone_number || phone;
+                }
+            }
+
+            // Extract Date
+            let lastUpdated = "Unknown";
+            if (provider.basic.last_updated) {
+                const dateParts = provider.basic.last_updated.split('-');
+                lastUpdated = dateParts.length === 3 ? `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}` : provider.basic.last_updated;
+            }
+
+            // Build the HTML Card
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `
+                <div class="result-row"><span class="result-label">Name:</span> ${name} <span class="badge">NPI: ${provider.number}</span></div>
+                <div class="result-row"><span class="result-label">Specialty:</span> ${specialty}</div>
+                <div class="result-row"><span class="result-label">Address:</span> ${address}</div>
+                <div class="result-row"><span class="result-label">Phone:</span> ${phone}</div>
+                <div class="result-row"><span class="result-label">Last Updated:</span> ${lastUpdated}</div>
+            `;
+            return card;
         }
 
         function showError(message) {
@@ -235,12 +306,9 @@
             errorMessage.style.display = 'block';
         }
 
-        // Allow pressing "Enter" key to trigger search
-        document.getElementById("npiInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                fetchNPIData();
-            }
+        // Trigger search on Enter key
+        document.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") { fetchProviderData(); }
         });
     </script>
 </body>
