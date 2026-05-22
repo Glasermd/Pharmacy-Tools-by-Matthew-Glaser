@@ -125,6 +125,10 @@
                 <span class="result-label">Phone:</span> 
                 <span id="docPhone"></span>
             </div>
+            <div class="result-row">
+                <span class="result-label">Last Updated:</span> 
+                <span id="docUpdated"></span>
+            </div>
         </div>
     </div>
 
@@ -150,9 +154,10 @@
             searchBtn.innerText = "Searching...";
             searchBtn.disabled = true;
 
-            // Federal NPPES API URL
-            const apiUrl = `https://npiregistry.cms.hhs.gov/api/?version=2.1&number=${npiInput}`;
+            // New Vercel Proxy URL (Bypasses CORS)
+            const apiUrl = `/api/npi?version=2.1&number=${npiInput}`;
 
+            
             try {
                 const response = await fetch(apiUrl);
                 const data = await response.json();
@@ -190,11 +195,24 @@
                         }
                     }
 
+                    // Extract Last Updated Date
+                    let lastUpdated = "Unknown";
+                    if (provider.basic.last_updated) {
+                        // The API returns YYYY-MM-DD. This formats it as MM/DD/YYYY
+                        const dateParts = provider.basic.last_updated.split('-');
+                        if(dateParts.length === 3) {
+                            lastUpdated = `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}`;
+                        } else {
+                            lastUpdated = provider.basic.last_updated;
+                        }
+                    }
+
                     // Populate UI
                     document.getElementById('docName').innerText = name;
                     document.getElementById('docSpecialty').innerText = specialty;
                     document.getElementById('docAddress').innerText = address;
                     document.getElementById('docPhone').innerText = phone;
+                    document.getElementById('docUpdated').innerText = lastUpdated;
 
                     // Show Results
                     resultCard.style.display = 'block';

@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/npi",
+      "destination": "https://npiregistry.cms.hhs.gov/api/"
+    }
+  ]
+}
