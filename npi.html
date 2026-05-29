@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>eGFD Prescriber Lookup</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -50,80 +49,41 @@
             border-right: 1px solid #ccc;
             transition: background 0.2s;
         }
-        .toggle-group label:last-child {
-            border-right: none;
-        }
-        .toggle-group input {
-            display: none;
-        }
-        .toggle-group input:checked + label {
-            background: #3498db;
-            color: white;
-        }
+        .toggle-group label:last-child { border-right: none; }
+        .toggle-group input { display: none; }
+        .toggle-group input:checked + label { background: #3498db; color: white; }
         
         /* Input Fields */
-        .input-row {
-            margin-bottom: 15px;
-        }
+        .input-row { margin-bottom: 15px; }
         .input-row label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #34495e;
-            font-size: 0.9em;
+            display: block; font-weight: 600; margin-bottom: 5px;
+            color: #34495e; font-size: 0.9em;
         }
         input[type="text"], select {
-            width: 100%;
-            padding: 10px;
-            font-size: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
+            width: 100%; padding: 10px; font-size: 15px;
+            border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
         }
-        .name-grid {
-            display: flex;
-            gap: 10px;
-        }
-        .name-grid > div {
-            flex: 1;
-        }
+        .name-grid { display: flex; gap: 10px; }
+        .name-grid > div { flex: 1; }
 
         /* Buttons */
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
+        .button-group { display: flex; gap: 10px; margin-top: 10px; }
         button {
-            flex: 2; /* Makes Search button wider */
-            padding: 12px;
-            background-color: #2ecc71;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
+            flex: 2; padding: 12px; background-color: #2ecc71; color: white;
+            border: none; border-radius: 4px; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: background-color 0.2s;
         }
         button:hover { background-color: #27ae60; }
         button:disabled { background-color: #95a5a6; cursor: not-allowed; }
         
-        .clear-btn {
-            flex: 1; /* Makes Clear button narrower */
-            background-color: #95a5a6;
-        }
+        .clear-btn { flex: 1; background-color: #95a5a6; }
         .clear-btn:hover { background-color: #7f8c8d; }
         
         /* Results Styling */
         #resultsContainer { margin-top: 25px; }
         .result-card {
-            background-color: #e8f4f8;
-            border-left: 5px solid #3498db;
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 15px;
-            font-size: 0.95em;
+            background-color: #e8f4f8; border-left: 5px solid #3498db;
+            border-radius: 4px; padding: 15px; margin-bottom: 15px; font-size: 0.95em;
         }
         .result-row { margin-bottom: 6px; }
         .result-label { font-weight: 600; color: #2c3e50; }
@@ -131,12 +91,20 @@
             background: #34495e; color: white; padding: 3px 6px; 
             border-radius: 3px; font-size: 0.8em; margin-left: 5px;
         }
+        .badge-alt {
+            background: #8e44ad; color: white; padding: 3px 6px; 
+            border-radius: 3px; font-size: 0.8em; margin-left: 5px;
+        }
+        .nppes-link {
+            display: inline-block; margin-top: 10px; font-size: 0.85em; font-weight: bold;
+            color: #d35400; text-decoration: none;
+        }
+        .nppes-link:hover { text-decoration: underline; }
         
         /* Error Message */
         #errorMessage {
-            display: none; margin-top: 15px; color: #c0392b;
-            background-color: #fdeaea; padding: 10px; border-radius: 4px;
-            font-weight: 600; text-align: center;
+            display: none; margin-top: 15px; color: #c0392b; background-color: #fdeaea;
+            padding: 10px; border-radius: 4px; font-weight: 600; text-align: center;
         }
     </style>
 </head>
@@ -206,7 +174,7 @@
             const isNPI = document.getElementById('searchNPI').checked;
             document.getElementById('npiModeFields').style.display = isNPI ? 'block' : 'none';
             document.getElementById('nameModeFields').style.display = isNPI ? 'none' : 'block';
-            clearForm(); // Auto-clear when switching modes to prevent confusion
+            clearForm();
         }
 
         // Clear all inputs and results
@@ -217,7 +185,21 @@
             document.getElementById('stateInput').value = '';
             document.getElementById('resultsContainer').innerHTML = '';
             document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('npiInput').focus(); // Put cursor back in NPI box
+            document.getElementById('npiInput').focus(); 
+        }
+
+        // Global toggle function for expanding multiple locations
+        function toggleLocations(element, event) {
+            event.preventDefault();
+            const container = element.nextElementSibling;
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                element.innerText = '- Hide other locations';
+            } else {
+                container.style.display = 'none';
+                const count = container.children.length;
+                element.innerText = `+ Show ${count} other location(s)`;
+            }
         }
 
         async function fetchProviderData() {
@@ -226,11 +208,9 @@
             const errorMessage = document.getElementById('errorMessage');
             const searchBtn = document.getElementById('searchBtn');
 
-            // Reset UI
             resultsContainer.innerHTML = '';
             errorMessage.style.display = 'none';
 
-            // Build the URL based on the selected mode
             let apiUrl = `/api/npi?version=2.1&limit=10`; 
 
             if (isNPI) {
@@ -252,7 +232,6 @@
                 apiUrl += `&first_name=${encodeURIComponent(first)}&last_name=${encodeURIComponent(last)}&state=${state}`;
             }
 
-            // Loading state
             searchBtn.innerText = "Searching...";
             searchBtn.disabled = true;
 
@@ -261,7 +240,6 @@
                 const data = await response.json();
 
                 if (data.result_count > 0) {
-                    // Loop through results and create a card for each
                     data.results.forEach(provider => {
                         resultsContainer.appendChild(createResultCard(provider));
                     });
@@ -277,7 +255,6 @@
             }
         }
 
-        // Helper function to parse provider JSON into a clean HTML card
         function createResultCard(provider) {
             // Extract Name
             let name = "Name not found";
@@ -288,47 +265,92 @@
                 name = `${provider.basic.first_name} ${provider.basic.last_name}${credential}`;
             }
 
-            // Extract Specialty
+            // Extract Specialty & CA License
             let specialty = "Specialty not listed";
+            let caLicense = "N/A";
+            
             if (provider.taxonomies && provider.taxonomies.length > 0) {
                 const primaryTax = provider.taxonomies.find(tax => tax.primary === true);
                 if (primaryTax) { specialty = primaryTax.desc; }
+                
+                // NEW: Find CA State License specifically
+                const caTax = provider.taxonomies.find(tax => tax.state === 'CA' && tax.license);
+                if (caTax) { caLicense = caTax.license; }
             }
 
-            // Extract Address, Phone, & Fax
-            let address = "Address not found";
+            // Extract Addresses (Handling Multiple Locations)
+            let primaryAddress = "Address not found";
             let phone = "N/A";
             let fax = "N/A";
-            
+            let multipleLocationsHtml = "";
+
             if (provider.addresses && provider.addresses.length > 0) {
-                // Find the LOCATION address specifically
-                const location = provider.addresses.find(addr => addr.address_purpose === "LOCATION");
-                if (location) {
-                    address = `${location.address_1}, ${location.city}, ${location.state} ${location.postal_code.substring(0, 5)}`;
-                    phone = location.telephone_number || phone;
-                    fax = location.fax_number || fax; // Grabbing the fax number right from the API!
+                const locations = provider.addresses.filter(addr => addr.address_purpose === "LOCATION");
+                
+                if (locations.length > 0) {
+                    // Grab the first one as primary
+                    const primary = locations[0];
+                    primaryAddress = `${primary.address_1}, ${primary.city}, ${primary.state} ${primary.postal_code.substring(0, 5)}`;
+                    phone = primary.telephone_number || phone;
+                    fax = primary.fax_number || fax;
+
+                    // NEW: If more than 1 location exists, build the expandable HTML section
+                    if (locations.length > 1) {
+                        let otherLocs = `<div style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #b2bec3;">`;
+                        for(let i=1; i < locations.length; i++) {
+                            const loc = locations[i];
+                            const addr = `${loc.address_1}, ${loc.city}, ${loc.state} ${loc.postal_code.substring(0, 5)}`;
+                            const ph = loc.telephone_number || "N/A";
+                            const fx = loc.fax_number || "N/A";
+                            otherLocs += `
+                                <div style="margin-bottom: 8px;">
+                                    <div><strong>Loc ${i+1}:</strong> ${addr}</div>
+                                    <div style="font-size: 0.9em; color: #555;">Phone: ${ph} | Fax: ${fx}</div>
+                                </div>`;
+                        }
+                        otherLocs += `</div>`;
+                        multipleLocationsHtml = `<a href="#" onclick="toggleLocations(this, event)" style="font-size: 0.85em; color: #3498db; text-decoration: none; display: block; margin-top: 4px;">+ Show ${locations.length - 1} other location(s)</a>` + otherLocs;
+                    }
                 }
             }
 
-            // Extract Date
+            // Extract Last Updated Date
             let lastUpdated = "Unknown";
             if (provider.basic.last_updated) {
                 const dateParts = provider.basic.last_updated.split('-');
                 lastUpdated = dateParts.length === 3 ? `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}` : provider.basic.last_updated;
             }
 
+            // Official NPPES Link
+            const profileUrl = `https://npiregistry.cms.hhs.gov/provider-view/${provider.number}`;
+
             // Build the HTML Card
             const card = document.createElement('div');
             card.className = 'result-card';
             card.innerHTML = `
-                <div class="result-row"><span class="result-label">Name:</span> ${name} <span class="badge">NPI: ${provider.number}</span></div>
-                <div class="result-row"><span class="result-label">Specialty:</span> ${specialty}</div>
-                <div class="result-row"><span class="result-label">Address:</span> ${address}</div>
                 <div class="result-row">
+                    <span class="result-label">Name:</span> ${name} 
+                    <span class="badge">NPI: ${provider.number}</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">CA License:</span> ${caLicense !== 'N/A' ? `<span class="badge-alt">${caLicense}</span>` : 'N/A'}
+                </div>
+                <div class="result-row"><span class="result-label">Specialty:</span> ${specialty}</div>
+                
+                <div class="result-row" style="margin-top: 10px;">
+                    <span class="result-label">Primary Address:</span> ${primaryAddress}
+                    ${multipleLocationsHtml}
+                </div>
+                
+                <div class="result-row" style="margin-top: 10px;">
                     <span class="result-label">Phone:</span> ${phone} &nbsp; | &nbsp; 
                     <span class="result-label">Fax:</span> ${fax}
                 </div>
                 <div class="result-row"><span class="result-label">Last Updated:</span> ${lastUpdated}</div>
+                
+                <div style="text-align: right; margin-top: 5px;">
+                    <a href="${profileUrl}" target="_blank" class="nppes-link">View Official NPPES Profile ↗</a>
+                </div>
             `;
             return card;
         }
