@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accumulation Calculator</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
     <style>
         :root {
             --primary: #2563eb;
@@ -97,6 +96,7 @@
         .form-group {
             flex: 1;
             margin-bottom: 0;
+            position: relative; /* For tooltip positioning */
         }
 
         label {
@@ -114,6 +114,34 @@
             border-radius: 6px;
             font-size: 0.95rem;
             box-sizing: border-box;
+            color: var(--text);
+            transition: border-color 0.2s;
+        }
+        
+        input[type="date"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Tooltip Styling */
+        .tooltip {
+            visibility: hidden;
+            background-color: #334155;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 6px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 100%; 
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
         }
 
         .mode-standard .col-dose { display: none !important; }
@@ -308,6 +336,33 @@
         calculateAccumulation();
     }
 
+    // Handles the mouse wheel scroll for dates
+    function handleDateScroll(event, inputElement) {
+        event.preventDefault(); // This stops the page from scrolling!
+        
+        // Default to today if empty
+        if (!inputElement.value) {
+            inputElement.value = new Date().toISOString().split('T')[0];
+            calculateAccumulation();
+            return;
+        }
+
+        const currentDate = new Date(inputElement.value);
+        if (isNaN(currentDate)) return;
+
+        let currentUtc = Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate());
+
+        if (event.deltaY < 0) {
+            currentUtc += (1000 * 60 * 60 * 24); 
+        } else {
+            currentUtc -= (1000 * 60 * 60 * 24); 
+        }
+
+        const newDate = new Date(currentUtc);
+        inputElement.value = newDate.toISOString().split('T')[0];
+        calculateAccumulation();
+    }
+
     function addFillRow() {
         rowCount++;
         const container = document.getElementById('fillsContainer');
@@ -319,6 +374,7 @@
             <div class="form-group">
                 <label>Dispense Date</label>
                 <input type="date" class="fill-date" onchange="calculateAccumulation()">
+                <span class="tooltip">Scroll mouse wheel to change by day</span>
             </div>
             
             <div class="form-group col-standard">
@@ -340,6 +396,22 @@
             ${rowCount > 1 ? `<button class="btn btn-remove" onclick="removeRow(${rowCount})">X</button>` : `<div style="width: 40px;"></div>`}
         `;
         container.appendChild(row);
+
+        // Target the dynamically created date input and tooltip
+        const dateInput = row.querySelector('.fill-date');
+        const tooltip = row.querySelector('.tooltip');
+        
+        // Add tooltip fade logic
+        dateInput.parentElement.addEventListener('mouseenter', () => {
+            tooltip.style.opacity = '1';
+            tooltip.style.visibility = 'visible';
+            setTimeout(() => {
+                tooltip.style.opacity = '0';
+            }, 3000);
+        });
+
+        // Add the wheel listener with { passive: false } to stop page scroll
+        dateInput.addEventListener('wheel', (e) => handleDateScroll(e, dateInput), { passive: false });
     }
 
     function removeRow(id) {
@@ -395,25 +467,18 @@
                 
                 if (currentFill.date < expectedRunOutDate) {
                     const diffTime = expectedRunOutDate.getTime() - currentFill.date.getTime();
+                    const daysEarly = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                     
-                    // The difference between the expected run out and the fill date IS the total banked buffer.
-                    const totalDaysBankedAtThisPoint = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    totalAccumulatedDays += daysEarly;
                     
-                    // Calculate how many NEW days early they filled compared to their previous bank
-                    const incrementalEarly = totalDaysBankedAtThisPoint - totalAccumulatedDays;
+                    expectedRunOutDate = new Date(currentFill.date);
+                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentFill.dos + totalAccumulatedDays);
                     
-                    // Update running total
-                    totalAccumulatedDays = totalDaysBankedAtThisPoint;
-                    
-                    // The new run out date just extends the current running target by the new DOS
-                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentFill.dos);
-                    
-                    details += `-> ${incrementalEarly} days early this fill (${totalAccumulatedDays} days total banked)\n`;
+                    details += `-> ${daysEarly} days early\n`;
                 } else {
-                    details += `-> On time/Late (0 days banked)\n`;
+                    details += `-> On time/Late\n`;
                     expectedRunOutDate = new Date(currentFill.date);
                     expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentFill.dos);
-                    totalAccumulatedDays = 0;
                 }
             }
 
@@ -437,17 +502,11 @@
 
                 if (currentFill.date < expectedRunOutDate) {
                     const diffTime = expectedRunOutDate.getTime() - currentFill.date.getTime();
+                    const daysEarly = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                     
-                    // Total days banked BEFORE calculating the new fill
-                    const totalDaysBankedAtThisPoint = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    // Convert days back to units using the OLD dose
-                    const unitsRemaining = totalDaysBankedAtThisPoint * currentDose;
-                    
-                    // Set the bank exactly to what is left over
-                    totalAccumulatedUnits = unitsRemaining;
+                    const unitsBanked = daysEarly * currentDose;
+                    totalAccumulatedUnits += unitsBanked;
 
-                    // Add new qty to the bank, calculate using NEW dose
                     let unitsOnHand = totalAccumulatedUnits + currentFill.qty;
                     currentDose = currentFill.dose; 
                     
@@ -456,10 +515,10 @@
                     expectedRunOutDate = new Date(currentFill.date);
                     expectedRunOutDate.setDate(expectedRunOutDate.getDate() + newDos);
 
-                    let cleanRemaining = unitsRemaining % 1 === 0 ? unitsRemaining : unitsRemaining.toFixed(1);
+                    let cleanBanked = unitsBanked % 1 === 0 ? unitsBanked : unitsBanked.toFixed(1);
                     let cleanOnHand = unitsOnHand % 1 === 0 ? unitsOnHand : unitsOnHand.toFixed(1);
 
-                    details += `-> ${totalDaysBankedAtThisPoint} days early vs expected run-out (${cleanRemaining} previous units banked).\n`;
+                    details += `-> ${daysEarly} days early (${cleanBanked} units banked).\n`;
                     details += `   Total units on hand: ${cleanOnHand}. Adjusted supply: ${newDos} days.\n`;
                 } else {
                     details += `-> On time/Late (0 units banked).\n`;

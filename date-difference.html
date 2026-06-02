@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Date Difference Calculator</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏳</text></svg>">
     <style>
         /* Exact color palette and variables from your other tools */
         :root {
@@ -32,7 +31,7 @@
 
         /* The "Window" containing the calculator */
         .container { 
-            max-width: 600px; 
+            max-width: 650px; 
             width: 100%;
             background: var(--card-bg); 
             padding: 30px; 
@@ -46,26 +45,59 @@
             text-align: center; 
             color: #0f172a; 
             margin-top: 0;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-size: 1.6rem;
+        }
+
+        /* Segmented Control for Mode Switching & Buttons */
+        .segmented-control {
+            display: flex;
+            background: var(--border);
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
+            margin-bottom: 25px;
+        }
+        .segmented-control label {
+            flex: 1;
+            text-align: center;
+            padding: 10px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin: 0;
+            transition: background-color 0.2s, box-shadow 0.2s, color 0.2s;
+            color: #475569;
+        }
+        .segmented-control input[type="radio"] {
+            display: none;
+        }
+        .segmented-control input[type="radio"]:checked + label {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            color: var(--primary);
         }
 
         .form-row { 
             display: flex; 
-            gap: 20px; 
+            gap: 15px; 
             margin-bottom: 20px; 
+            flex-wrap: wrap; 
         }
         .form-group { 
             flex: 1; 
             position: relative;
+            min-width: 120px;
         }
         label { 
             display: block; 
             font-weight: 600; 
             margin-bottom: 8px; 
             color: var(--text);
+            font-size: 0.95rem;
         }
-        input[type="date"] { 
+        input[type="date"], input[type="number"], select { 
             width: 100%; 
             padding: 10px; 
             border: 1px solid var(--border); 
@@ -73,9 +105,10 @@
             box-sizing: border-box; 
             font-size: 16px;
             color: var(--text);
+            background-color: white;
             transition: border-color 0.2s;
         }
-        input[type="date"]:focus {
+        input[type="date"]:focus, input[type="number"]:focus, select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -131,6 +164,7 @@
             font-weight: normal; 
             margin: 0; 
             cursor: pointer;
+            font-size: 0.95rem;
         }
 
         .result-box { 
@@ -148,7 +182,7 @@
             line-height: 1.4;
         }
         .result-text { 
-            font-size: 42px; 
+            font-size: 38px; 
             font-weight: bold; 
             color: var(--primary); 
             margin: 0; 
@@ -174,9 +208,7 @@
             background-color: var(--success); 
         }
 
-        /* ---------------------------------------------------- */
-        /* FOOTER AREA (Outside the main container card)        */
-        /* ---------------------------------------------------- */
+        /* Footer Area */
         .footer-area {
             max-width: 650px;
             width: 100%;
@@ -193,7 +225,7 @@
         .nav-link { 
             display: inline-block;
             padding: 10px 18px; 
-            background-color: #ffffff; /* Added white background */
+            background-color: #ffffff; 
             color: var(--primary); 
             text-decoration: none; 
             border-radius: 6px; 
@@ -225,37 +257,85 @@
 <body>
     
     <div class="container">
-        <h2>Date Difference Calculator</h2>
+        <h2>Date Calculator</h2>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="startDate">Start Date:</label>
-                <input type="date" id="startDate">
-                <span class="tooltip" id="startTooltip">Scroll mouse wheel to change by day</span>
+        <div class="segmented-control">
+            <input type="radio" id="modeDiff" name="calcMode" value="diff" checked onchange="toggleMode()">
+            <label for="modeDiff">Calculate Difference</label>
+            
+            <input type="radio" id="modeMath" name="calcMode" value="math" onchange="toggleMode()">
+            <label for="modeMath">Add / Subtract Days</label>
+        </div>
+
+        <div id="diffContainer">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate">
+                    <span class="tooltip" id="startTooltip">Scroll mouse wheel to change by day</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" id="endDate">
+                    <span class="tooltip" id="endTooltip">Scroll mouse wheel to change by day</span>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="endDate">End Date:</label>
-                <input type="date" id="endDate">
-                <span class="tooltip" id="endTooltip">Scroll mouse wheel to change by day</span>
+            <div class="options-group">
+                <label>Counting Logic:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="includeStart" checked onchange="calculate()">
+                    <label for="includeStart">Include Start Date in count</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="includeEnd" checked onchange="calculate()">
+                    <label for="includeEnd">Include End Date in count</label>
+                </div>
             </div>
         </div>
 
-        <div class="options-group">
-            <label>Counting Logic:</label>
-            <div class="checkbox-group">
-                <input type="checkbox" id="includeStart" checked>
-                <label for="includeStart">Include Start Date in count</label>
+        <div id="mathContainer" style="display: none;">
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label id="baseDateLabel" for="baseDate">Start Date:</label>
+                    <input type="date" id="baseDate">
+                    <span class="tooltip" id="baseTooltip">Scroll mouse wheel to change by day</span>
+                </div>
+
+                <div class="form-group" style="flex: 2;">
+                    <label>Action:</label>
+                    <div class="segmented-control" style="margin-bottom: 0; padding: 3px;">
+                        <input type="radio" id="opAdd" name="mathOp" value="add" checked onchange="updateMathUI(); calculate();">
+                        <label for="opAdd" style="padding: 7px 4px;">Add (+)</label>
+                        
+                        <input type="radio" id="opSub" name="mathOp" value="subtract" onchange="updateMathUI(); calculate();">
+                        <label for="opSub" style="padding: 7px 4px;">Subtract (-)</label>
+                    </div>
+                </div>
+
+                <div class="form-group" style="flex: 1.2;">
+                    <label for="dayCount">Days:</label>
+                    <input type="number" id="dayCount" value="30" min="0" oninput="calculate()">
+                </div>
             </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="includeEnd" checked>
-                <label for="includeEnd">Include End Date in count</label>
+
+            <div class="options-group">
+                <label>Counting Logic:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="mathIncludeStart" checked onchange="calculate()">
+                    <label for="mathIncludeStart">Include Start Date in count</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="mathIncludeEnd" checked onchange="calculate()">
+                    <label for="mathIncludeEnd">Include End Date in count</label>
+                </div>
             </div>
         </div>
 
         <div class="result-box">
-            <p class="result-label" id="resultLabel">Total Days:</p>
-            <p class="result-text" id="resultDays">0</p>
+            <p class="result-label" id="resultLabel">Result:</p>
+            <p class="result-text" id="resultText">0</p>
             <button id="copyBtn" class="copy-btn">Copy Result</button>
         </div>
     </div>
@@ -275,12 +355,21 @@
     </div>
 
     <script>
+        // DOM Elements - Diff Mode
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
         const includeStartCheckbox = document.getElementById('includeStart');
         const includeEndCheckbox = document.getElementById('includeEnd');
+        
+        // DOM Elements - Math Mode
+        const baseDateInput = document.getElementById('baseDate');
+        const dayCountInput = document.getElementById('dayCount');
+        const mathIncludeStartCheckbox = document.getElementById('mathIncludeStart');
+        const mathIncludeEndCheckbox = document.getElementById('mathIncludeEnd');
+
+        // Global Outputs
         const resultLabel = document.getElementById('resultLabel');
-        const resultDaysText = document.getElementById('resultDays');
+        const resultText = document.getElementById('resultText');
         const copyBtn = document.getElementById('copyBtn');
         
         // Tooltip logic
@@ -295,14 +384,40 @@
 
         startDateInput.parentElement.addEventListener('mouseenter', () => handleTooltip('startTooltip'));
         endDateInput.parentElement.addEventListener('mouseenter', () => handleTooltip('endTooltip'));
+        baseDateInput.parentElement.addEventListener('mouseenter', () => handleTooltip('baseTooltip'));
 
-        // Default dates on load
+        // Initialization
         const today = new Date();
         const lastMonth = new Date();
         lastMonth.setMonth(today.getMonth() - 1);
 
         startDateInput.value = lastMonth.toISOString().split('T')[0];
         endDateInput.value = today.toISOString().split('T')[0];
+        baseDateInput.value = today.toISOString().split('T')[0];
+
+        // Mode Toggling
+        function toggleMode() {
+            const mode = document.querySelector('input[name="calcMode"]:checked').value;
+            if (mode === 'diff') {
+                document.getElementById('diffContainer').style.display = 'block';
+                document.getElementById('mathContainer').style.display = 'none';
+            } else {
+                document.getElementById('diffContainer').style.display = 'none';
+                document.getElementById('mathContainer').style.display = 'block';
+            }
+            calculate();
+        }
+
+        // Dynamically switch the input label based on Add/Subtract selection
+        function updateMathUI() {
+            const op = document.querySelector('input[name="mathOp"]:checked').value;
+            const label = document.getElementById('baseDateLabel');
+            if (op === 'add') {
+                label.innerText = 'Start Date:';
+            } else {
+                label.innerText = 'End Date:';
+            }
+        }
 
         // Reset Copy Button State
         function resetCopyState() {
@@ -312,18 +427,18 @@
 
         // Copy logic
         copyBtn.addEventListener('click', () => {
-            const textToCopy = resultDaysText.innerText;
-            if (textToCopy !== "0" && textToCopy !== "Invalid Dates") {
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    copyBtn.innerText = "Copied!";
-                    copyBtn.classList.add("copied");
-                });
-            }
+            if (resultLabel.innerText.includes("Please enter valid")) return;
+            const fullTextToCopy = resultLabel.innerText + " " + resultText.innerText;
+            
+            navigator.clipboard.writeText(fullTextToCopy).then(() => {
+                copyBtn.innerText = "Copied!";
+                copyBtn.classList.add("copied");
+            });
         });
 
         // Mouse Wheel Scroll Logic
         function handleScroll(event, inputElement) {
-            event.preventDefault();
+            event.preventDefault(); 
             const currentDate = new Date(inputElement.value);
             if (isNaN(currentDate)) return;
 
@@ -337,25 +452,36 @@
 
             const newDate = new Date(currentUtc);
             inputElement.value = newDate.toISOString().split('T')[0];
-            calculateDays();
+            calculate();
         }
 
-        startDateInput.addEventListener('wheel', (e) => handleScroll(e, startDateInput));
-        endDateInput.addEventListener('wheel', (e) => handleScroll(e, endDateInput));
+        startDateInput.addEventListener('wheel', (e) => handleScroll(e, startDateInput), { passive: false });
+        endDateInput.addEventListener('wheel', (e) => handleScroll(e, endDateInput), { passive: false });
+        baseDateInput.addEventListener('wheel', (e) => handleScroll(e, baseDateInput), { passive: false });
 
-        function calculateDays() {
-            resetCopyState(); // Reset the copy button anytime a recalculation happens
+        // Master Calculate Function
+        function calculate() {
+            resetCopyState();
+            const mode = document.querySelector('input[name="calcMode"]:checked').value;
+            
+            if (mode === 'diff') {
+                calculateDifference();
+            } else {
+                calculateMath();
+            }
+        }
 
+        // Mode 1: Date Difference
+        function calculateDifference() {
             const start = new Date(startDateInput.value);
             const end = new Date(endDateInput.value);
 
             if (isNaN(start) || isNaN(end)) {
-                resultLabel.innerText = "Please select valid dates.";
-                resultDaysText.innerText = "0";
+                resultLabel.innerText = "Please enter valid dates.";
+                resultText.innerText = "--";
                 return;
             }
 
-            // Generate clean date strings for the annotation
             const startDateString = start.toLocaleDateString('en-US', { timeZone: 'UTC' });
             const endDateString = end.toLocaleDateString('en-US', { timeZone: 'UTC' });
 
@@ -368,7 +494,6 @@
             const includeEnd = includeEndCheckbox.checked;
 
             let logicText = "";
-
             if (includeStart && includeEnd) {
                 diffDays += 1;
                 logicText = "Counting <strong>both</strong> start and end dates";
@@ -383,18 +508,75 @@
 
             if (diffDays < 0) diffDays = 0;
 
-            // Update the display outputs
             resultLabel.innerHTML = `${logicText}, the total days between ${startDateString} and ${endDateString} is:`;
-            resultDaysText.innerText = diffDays;
+            resultText.innerText = diffDays;
         }
 
-        startDateInput.addEventListener('input', calculateDays);
-        endDateInput.addEventListener('input', calculateDays);
-        includeStartCheckbox.addEventListener('change', calculateDays);
-        includeEndCheckbox.addEventListener('change', calculateDays);
+        // Mode 2: Add / Subtract Math
+        function calculateMath() {
+            const base = new Date(baseDateInput.value);
+            const op = document.querySelector('input[name="mathOp"]:checked').value;
+            const days = Math.abs(parseInt(dayCountInput.value, 10)); 
+            const incStart = mathIncludeStartCheckbox.checked;
+            const incEnd = mathIncludeEndCheckbox.checked;
 
-        // Initial calculation on load
-        calculateDays();
+            if (isNaN(base) || isNaN(days)) {
+                resultLabel.innerText = "Please enter valid date and days.";
+                resultText.innerText = "--";
+                return;
+            }
+
+            let offset = days;
+            
+            // Adjust mathematical offset based on inclusivity of the interval
+            if (op === 'add') {
+                if (incStart && incEnd) offset -= 1;
+                else if (!incStart && !incEnd) offset += 1;
+            } else { 
+                if (incStart && incEnd) offset -= 1;
+                else if (!incStart && !incEnd) offset += 1;
+            }
+
+            // Calculate Target Date
+            const utcBase = Date.UTC(base.getFullYear(), base.getMonth(), base.getDate());
+            let resultUtc;
+            
+            if (op === 'add') {
+                resultUtc = utcBase + (offset * 24 * 60 * 60 * 1000);
+            } else {
+                resultUtc = utcBase - (offset * 24 * 60 * 60 * 1000);
+            }
+
+            const baseDateString = base.toLocaleDateString('en-US', { timeZone: 'UTC' });
+            const targetDate = new Date(resultUtc);
+            const targetDateString = targetDate.toLocaleDateString('en-US', { timeZone: 'UTC' });
+
+            // Generate Output Text using the exact same logic wording
+            let logicText = "";
+            if (incStart && incEnd) logicText = "Counting <strong>both</strong> start and end dates";
+            else if (incStart && !incEnd) logicText = "Counting the <strong>start date only</strong>";
+            else if (!incStart && incEnd) logicText = "Counting the <strong>end date only</strong>";
+            else logicText = "<strong>Excluding</strong> both start and end dates";
+
+            if (op === 'add') {
+                resultLabel.innerHTML = `${logicText}, adding ${days} days to ${baseDateString} results in an End Date of:`;
+            } else {
+                resultLabel.innerHTML = `${logicText}, subtracting ${days} days from ${baseDateString} results in a Start Date of:`;
+            }
+            
+            resultText.innerText = targetDateString;
+        }
+
+        // Event Listeners for standard typing changes
+        startDateInput.addEventListener('input', calculate);
+        endDateInput.addEventListener('input', calculate);
+        baseDateInput.addEventListener('input', calculate);
+        mathIncludeStartCheckbox.addEventListener('change', calculate);
+        mathIncludeEndCheckbox.addEventListener('change', calculate);
+
+        // Run Initial Calculation
+        updateMathUI();
+        calculate();
     </script>
 </body>
 </html>
