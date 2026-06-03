@@ -100,6 +100,19 @@
             color: #d35400; text-decoration: none;
         }
         .nppes-link:hover { text-decoration: underline; }
+
+        /* Verify CA License Link */
+        .verify-link {
+            font-size: 0.85em;
+            color: #e67e22;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .verify-link:hover {
+            text-decoration: underline;
+        }
         
         /* Error Message */
         #errorMessage {
@@ -202,6 +215,22 @@
             }
         }
 
+        // Copies license to clipboard and opens the CA Board Search
+        function verifyCALicense(licenseNum, event) {
+            event.preventDefault(); 
+            
+            navigator.clipboard.writeText(licenseNum).then(() => {
+                event.target.innerText = "Copied! Opening...";
+                setTimeout(() => {
+                    window.open('https://search.dca.ca.gov/', '_blank');
+                    event.target.innerText = "Verify on CA Board ↗"; 
+                }, 600);
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+                window.open('https://search.dca.ca.gov/', '_blank');
+            });
+        }
+
         async function fetchProviderData() {
             const isNPI = document.getElementById('searchNPI').checked;
             const resultsContainer = document.getElementById('resultsContainer');
@@ -211,6 +240,7 @@
             resultsContainer.innerHTML = '';
             errorMessage.style.display = 'none';
 
+            // Uses your Vercel Proxy Rewrite to bypass CORS!
             let apiUrl = `/api/npi?version=2.1&limit=10`; 
 
             if (isNPI) {
@@ -255,7 +285,7 @@
             }
         }
 
-        function createResultCard(provider) {
+            function createResultCard(provider) {
             // Extract Name
             let name = "Name not found";
             if (provider.basic.organization_name) {
@@ -265,6 +295,10 @@
                 name = `${provider.basic.first_name} ${provider.basic.last_name}${credential}`;
             }
 
+            // Web Search URL for "Pill Mill" Review Checking
+            const searchTerms = `${name} ${provider.basic.organization_name ? '' : 'doctor'} reviews`;
+            const webSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchTerms)}`;
+
             // Extract Specialty & CA License
             let specialty = "Specialty not listed";
             let caLicense = "N/A";
@@ -273,28 +307,32 @@
                 const primaryTax = provider.taxonomies.find(tax => tax.primary === true);
                 if (primaryTax) { specialty = primaryTax.desc; }
                 
-                // NEW: Find CA State License specifically
+                // Find CA State License specifically
                 const caTax = provider.taxonomies.find(tax => tax.state === 'CA' && tax.license);
                 if (caTax) { caLicense = caTax.license; }
             }
 
-            // Extract Addresses (Handling Multiple Locations)
+            // Extract Addresses (Handling Multiple Locations & Adding Maps)
             let primaryAddress = "Address not found";
             let phone = "N/A";
             let fax = "N/A";
             let multipleLocationsHtml = "";
+            let mapLink = "";
 
             if (provider.addresses && provider.addresses.length > 0) {
                 const locations = provider.addresses.filter(addr => addr.address_purpose === "LOCATION");
                 
                 if (locations.length > 0) {
-                    // Grab the first one as primary
                     const primary = locations[0];
                     primaryAddress = `${primary.address_1}, ${primary.city}, ${primary.state} ${primary.postal_code.substring(0, 5)}`;
                     phone = primary.telephone_number || phone;
                     fax = primary.fax_number || fax;
+                    
+                    // Google Maps URL for primary address
+                    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(primaryAddress)}`;
+                    mapLink = `<a href="${mapUrl}" target="_blank" style="font-size: 0.85em; color: #27ae60; text-decoration: none; font-weight: bold; margin-left: 8px;">[ Map 📍 ]</a>`;
 
-                    // NEW: If more than 1 location exists, build the expandable HTML section
+                    // Expandable HTML for additional locations
                     if (locations.length > 1) {
                         let otherLocs = `<div style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #b2bec3;">`;
                         for(let i=1; i < locations.length; i++) {
@@ -302,9 +340,11 @@
                             const addr = `${loc.address_1}, ${loc.city}, ${loc.state} ${loc.postal_code.substring(0, 5)}`;
                             const ph = loc.telephone_number || "N/A";
                             const fx = loc.fax_number || "N/A";
+                            const locMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+                            
                             otherLocs += `
                                 <div style="margin-bottom: 8px;">
-                                    <div><strong>Loc ${i+1}:</strong> ${addr}</div>
+                                    <div><strong>Loc ${i+1}:</strong> ${addr} <a href="${locMapUrl}" target="_blank" style="font-size: 0.85em; color: #27ae60; text-decoration: none; font-weight: bold; margin-left: 5px;">[ Map 📍 ]</a></div>
                                     <div style="font-size: 0.9em; color: #555;">Phone: ${ph} | Fax: ${fx}</div>
                                 </div>`;
                         }
@@ -331,9 +371,60 @@
                 <div class="result-row">
                     <span class="result-label">Name:</span> ${name} 
                     <span class="badge">NPI: ${provider.number}</span>
+                    <a href="${webSearchUrl}" target="_blank" style="font-size: 0.85em; color: #34495e; text-decoration: none; font-weight: bold; margin-left: 8px;">[ Web Search 🔍 ]</a>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">CA License:</span> ${caLicense !== 'N/A' ? `<span class="badge-alt">${caLicense}</span>` : 'N/A'}
+                    <span class="result-label">CA License:</span> 
+                    ${caLicense !== 'N/A' 
+                        ? `<span class="badge-alt">${caLicense}</span> 
+                           <a href="#" class="verify-link" onclick="verifyCALicense('${caLicense}', event)">Verify on CA Board ↗</a>` 
+                        : 'N/A'}
+                </div>
+                <div class="result-row"><span class="result-label">Specialty:</span> ${specialty}</div>
+                
+                <div class="result-row" style="margin-top: 10px;">
+                    <span class="result-label">Primary Address:</span> ${primaryAddress} ${mapLink}
+                    ${multipleLocationsHtml}
+                </div>
+                
+                <div class="result-row" style="margin-top: 10px;">
+                    <span class="result-label">Phone:</span> ${phone} &nbsp; | &nbsp; 
+                    <span class="result-label">Fax:</span> ${fax}
+                </div>
+                <div class="result-row"><span class="result-label">Last Updated:</span> ${lastUpdated}</div>
+                
+                <div style="text-align: right; margin-top: 5px;">
+                    <a href="${profileUrl}" target="_blank" class="nppes-link">View Official NPPES Profile ↗</a>
+                </div>
+            `;
+            return card;
+        }
+
+
+            // Extract Last Updated Date
+            let lastUpdated = "Unknown";
+            if (provider.basic.last_updated) {
+                const dateParts = provider.basic.last_updated.split('-');
+                lastUpdated = dateParts.length === 3 ? `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}` : provider.basic.last_updated;
+            }
+
+            // Official NPPES Link
+            const profileUrl = `https://npiregistry.cms.hhs.gov/provider-view/${provider.number}`;
+
+            // Build the HTML Card
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `
+                <div class="result-row">
+                    <span class="result-label">Name:</span> ${name} 
+                    <span class="badge">NPI: ${provider.number}</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">CA License:</span> 
+                    ${caLicense !== 'N/A' 
+                        ? `<span class="badge-alt">${caLicense}</span> 
+                           <a href="#" class="verify-link" onclick="verifyCALicense('${caLicense}', event)">Verify on CA Board ↗</a>` 
+                        : 'N/A'}
                 </div>
                 <div class="result-row"><span class="result-label">Specialty:</span> ${specialty}</div>
                 
