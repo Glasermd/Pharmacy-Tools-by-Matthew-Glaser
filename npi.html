@@ -101,18 +101,18 @@
         }
         .nppes-link:hover { text-decoration: underline; }
 
-        /* Verify CA License Link */
-        .verify-link {
+        /* Action Links (Verify, Map, Search) */
+        .action-link {
             font-size: 0.85em;
-            color: #e67e22;
-            text-decoration: none;
             font-weight: bold;
-            margin-left: 10px;
+            margin-left: 8px;
+            text-decoration: none;
             cursor: pointer;
         }
-        .verify-link:hover {
-            text-decoration: underline;
-        }
+        .action-link:hover { text-decoration: underline; }
+        .color-verify { color: #e67e22; }
+        .color-map { color: #27ae60; }
+        .color-search { color: #34495e; }
         
         /* Error Message */
         #errorMessage {
@@ -223,7 +223,7 @@
                 event.target.innerText = "Copied! Opening...";
                 setTimeout(() => {
                     window.open('https://search.dca.ca.gov/', '_blank');
-                    event.target.innerText = "Verify on CA Board ↗"; 
+                    event.target.innerText = "[ Verify on CA Board ↗ ]"; 
                 }, 600);
             }).catch(err => {
                 console.error('Could not copy text: ', err);
@@ -240,7 +240,7 @@
             resultsContainer.innerHTML = '';
             errorMessage.style.display = 'none';
 
-            // Uses your Vercel Proxy Rewrite to bypass CORS!
+            // Uses your Vercel Proxy Rewrite to bypass CORS
             let apiUrl = `/api/npi?version=2.1&limit=10`; 
 
             if (isNPI) {
@@ -285,7 +285,7 @@
             }
         }
 
-            function createResultCard(provider) {
+        function createResultCard(provider) {
             // Extract Name
             let name = "Name not found";
             if (provider.basic.organization_name) {
@@ -330,7 +330,7 @@
                     
                     // Google Maps URL for primary address
                     const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(primaryAddress)}`;
-                    mapLink = `<a href="${mapUrl}" target="_blank" style="font-size: 0.85em; color: #27ae60; text-decoration: none; font-weight: bold; margin-left: 8px;">[ Map 📍 ]</a>`;
+                    mapLink = `<a href="${mapUrl}" target="_blank" class="action-link color-map">[ Map 📍 ]</a>`;
 
                     // Expandable HTML for additional locations
                     if (locations.length > 1) {
@@ -344,7 +344,7 @@
                             
                             otherLocs += `
                                 <div style="margin-bottom: 8px;">
-                                    <div><strong>Loc ${i+1}:</strong> ${addr} <a href="${locMapUrl}" target="_blank" style="font-size: 0.85em; color: #27ae60; text-decoration: none; font-weight: bold; margin-left: 5px;">[ Map 📍 ]</a></div>
+                                    <div><strong>Loc ${i+1}:</strong> ${addr} <a href="${locMapUrl}" target="_blank" class="action-link color-map">[ Map 📍 ]</a></div>
                                     <div style="font-size: 0.9em; color: #555;">Phone: ${ph} | Fax: ${fx}</div>
                                 </div>`;
                         }
@@ -371,65 +371,19 @@
                 <div class="result-row">
                     <span class="result-label">Name:</span> ${name} 
                     <span class="badge">NPI: ${provider.number}</span>
-                    <a href="${webSearchUrl}" target="_blank" style="font-size: 0.85em; color: #34495e; text-decoration: none; font-weight: bold; margin-left: 8px;">[ Web Search 🔍 ]</a>
+                    <a href="${webSearchUrl}" target="_blank" class="action-link color-search">[ Web Search 🔍 ]</a>
                 </div>
                 <div class="result-row">
                     <span class="result-label">CA License:</span> 
                     ${caLicense !== 'N/A' 
                         ? `<span class="badge-alt">${caLicense}</span> 
-                           <a href="#" class="verify-link" onclick="verifyCALicense('${caLicense}', event)">Verify on CA Board ↗</a>` 
+                           <a href="#" class="action-link color-verify" onclick="verifyCALicense('${caLicense}', event)">[ Verify on CA Board ↗ ]</a>` 
                         : 'N/A'}
                 </div>
                 <div class="result-row"><span class="result-label">Specialty:</span> ${specialty}</div>
                 
                 <div class="result-row" style="margin-top: 10px;">
                     <span class="result-label">Primary Address:</span> ${primaryAddress} ${mapLink}
-                    ${multipleLocationsHtml}
-                </div>
-                
-                <div class="result-row" style="margin-top: 10px;">
-                    <span class="result-label">Phone:</span> ${phone} &nbsp; | &nbsp; 
-                    <span class="result-label">Fax:</span> ${fax}
-                </div>
-                <div class="result-row"><span class="result-label">Last Updated:</span> ${lastUpdated}</div>
-                
-                <div style="text-align: right; margin-top: 5px;">
-                    <a href="${profileUrl}" target="_blank" class="nppes-link">View Official NPPES Profile ↗</a>
-                </div>
-            `;
-            return card;
-        }
-
-
-            // Extract Last Updated Date
-            let lastUpdated = "Unknown";
-            if (provider.basic.last_updated) {
-                const dateParts = provider.basic.last_updated.split('-');
-                lastUpdated = dateParts.length === 3 ? `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}` : provider.basic.last_updated;
-            }
-
-            // Official NPPES Link
-            const profileUrl = `https://npiregistry.cms.hhs.gov/provider-view/${provider.number}`;
-
-            // Build the HTML Card
-            const card = document.createElement('div');
-            card.className = 'result-card';
-            card.innerHTML = `
-                <div class="result-row">
-                    <span class="result-label">Name:</span> ${name} 
-                    <span class="badge">NPI: ${provider.number}</span>
-                </div>
-                <div class="result-row">
-                    <span class="result-label">CA License:</span> 
-                    ${caLicense !== 'N/A' 
-                        ? `<span class="badge-alt">${caLicense}</span> 
-                           <a href="#" class="verify-link" onclick="verifyCALicense('${caLicense}', event)">Verify on CA Board ↗</a>` 
-                        : 'N/A'}
-                </div>
-                <div class="result-row"><span class="result-label">Specialty:</span> ${specialty}</div>
-                
-                <div class="result-row" style="margin-top: 10px;">
-                    <span class="result-label">Primary Address:</span> ${primaryAddress}
                     ${multipleLocationsHtml}
                 </div>
                 
