@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eGFD Prescriber Lookup</title>
+    <title>eGFD Prescriber Lookup & Checklist</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -53,10 +53,11 @@
             display: block; font-weight: 600; margin-bottom: 5px;
             color: #34495e; font-size: 0.9em;
         }
-        input[type="text"], select {
+        input[type="text"], select, textarea {
             width: 100%; padding: 10px; font-size: 15px;
             border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
         }
+        textarea { resize: vertical; }
         .name-grid { display: flex; gap: 10px; }
         .name-grid > div { flex: 1; }
 
@@ -65,7 +66,7 @@
         button {
             flex: 2; padding: 12px; background-color: #2ecc71; color: white;
             border: none; border-radius: 4px; font-size: 16px; font-weight: 600;
-            cursor: pointer; transition: background-color 0.2s;
+            cursor: pointer; transition: background-color 0.2s; width: 100%;
         }
         button:hover { background-color: #27ae60; }
         button:disabled { background-color: #95a5a6; cursor: not-allowed; }
@@ -117,6 +118,20 @@
             display: none; margin-top: 15px; color: #c0392b; background-color: #fdeaea;
             padding: 10px; border-radius: 4px; font-weight: 600; text-align: center;
         }
+
+        /* Checklist Styling */
+        .checklist-row { display: flex; gap: 20px; }
+        .checklist-column { flex: 1; }
+        .checkbox-group label {
+            display: block; margin-bottom: 8px; font-size: 0.95em;
+            color: #34495e; cursor: pointer;
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px; transform: scale(1.2); cursor: pointer;
+        }
+        @media (max-width: 600px) {
+            .checklist-row { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
@@ -153,56 +168,31 @@
             <div class="input-row">
                 <label for="stateInput">State</label>
                 <select id="stateInput">
-                    <option value="AL">Alabama</option>
-                    <option value="AK">Alaska</option>
-                    <option value="AZ">Arizona</option>
-                    <option value="AR">Arkansas</option>
-                    <option value="CA" selected>California</option>
-                    <option value="CO">Colorado</option>
-                    <option value="CT">Connecticut</option>
-                    <option value="DE">Delaware</option>
-                    <option value="DC">District Of Columbia</option>
-                    <option value="FL">Florida</option>
-                    <option value="GA">Georgia</option>
-                    <option value="HI">Hawaii</option>
-                    <option value="ID">Idaho</option>
-                    <option value="IL">Illinois</option>
-                    <option value="IN">Indiana</option>
-                    <option value="IA">Iowa</option>
-                    <option value="KS">Kansas</option>
-                    <option value="KY">Kentucky</option>
-                    <option value="LA">Louisiana</option>
-                    <option value="ME">Maine</option>
-                    <option value="MD">Maryland</option>
-                    <option value="MA">Massachusetts</option>
-                    <option value="MI">Michigan</option>
-                    <option value="MN">Minnesota</option>
-                    <option value="MS">Mississippi</option>
-                    <option value="MO">Missouri</option>
-                    <option value="MT">Montana</option>
-                    <option value="NE">Nebraska</option>
-                    <option value="NV">Nevada</option>
-                    <option value="NH">New Hampshire</option>
-                    <option value="NJ">New Jersey</option>
-                    <option value="NM">New Mexico</option>
-                    <option value="NY">New York</option>
-                    <option value="NC">North Carolina</option>
-                    <option value="ND">North Dakota</option>
-                    <option value="OH">Ohio</option>
-                    <option value="OK">Oklahoma</option>
-                    <option value="OR">Oregon</option>
-                    <option value="PA">Pennsylvania</option>
-                    <option value="RI">Rhode Island</option>
-                    <option value="SC">South Carolina</option>
-                    <option value="SD">South Dakota</option>
-                    <option value="TN">Tennessee</option>
-                    <option value="TX">Texas</option>
-                    <option value="UT">Utah</option>
-                    <option value="VT">Vermont</option>
-                    <option value="VA">Virginia</option>
-                    <option value="WA">Washington</option>
-                    <option value="WV">West Virginia</option>
-                    <option value="WI">Wisconsin</option>
+                    <option value="AL">Alabama</option><option value="AK">Alaska</option>
+                    <option value="AZ">Arizona</option><option value="AR">Arkansas</option>
+                    <option value="CA" selected>California</option><option value="CO">Colorado</option>
+                    <option value="CT">Connecticut</option><option value="DE">Delaware</option>
+                    <option value="DC">District Of Columbia</option><option value="FL">Florida</option>
+                    <option value="GA">Georgia</option><option value="HI">Hawaii</option>
+                    <option value="ID">Idaho</option><option value="IL">Illinois</option>
+                    <option value="IN">Indiana</option><option value="IA">Iowa</option>
+                    <option value="KS">Kansas</option><option value="KY">Kentucky</option>
+                    <option value="LA">Louisiana</option><option value="ME">Maine</option>
+                    <option value="MD">Maryland</option><option value="MA">Massachusetts</option>
+                    <option value="MI">Michigan</option><option value="MN">Minnesota</option>
+                    <option value="MS">Mississippi</option><option value="MO">Missouri</option>
+                    <option value="MT">Montana</option><option value="NE">Nebraska</option>
+                    <option value="NV">Nevada</option><option value="NH">New Hampshire</option>
+                    <option value="NJ">New Jersey</option><option value="NM">New Mexico</option>
+                    <option value="NY">New York</option><option value="NC">North Carolina</option>
+                    <option value="ND">North Dakota</option><option value="OH">Ohio</option>
+                    <option value="OK">Oklahoma</option><option value="OR">Oregon</option>
+                    <option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option>
+                    <option value="SC">South Carolina</option><option value="SD">South Dakota</option>
+                    <option value="TN">Tennessee</option><option value="TX">Texas</option>
+                    <option value="UT">Utah</option><option value="VT">Vermont</option>
+                    <option value="VA">Virginia</option><option value="WA">Washington</option>
+                    <option value="WV">West Virginia</option><option value="WI">Wisconsin</option>
                     <option value="WY">Wyoming</option>
                 </select>
             </div>
@@ -214,11 +204,63 @@
         </div>
 
         <div id="errorMessage"></div>
-        
         <div id="resultsContainer"></div>
+
+        <hr style="border: 0; border-top: 2px dashed #ecf0f1; margin: 30px 0;">
+        <h2>Manual Address Check</h2>
+        <p style="font-size: 0.85em; color: #555; margin-top: -15px; margin-bottom: 15px;">Use this if the prescription address differs from the NPI registry.</p>
+        
+        <div class="input-row">
+            <input type="text" id="manualAddressInput" placeholder="e.g., 123 Main St, Los Angeles, CA 90001">
+        </div>
+        <button id="manualAddressBtn" onclick="checkManualAddress()" style="background-color: #2980b9;">Analyze Address 📍</button>
+        
+        <div id="manualAddressResult" style="display: none; margin-top: 15px; padding: 15px; background-color: #e8f4f8; border-left: 5px solid #2980b9; border-radius: 4px; font-size: 0.95em;"></div>
+
+        <hr style="border: 0; border-top: 2px dashed #ecf0f1; margin: 30px 0;">
+        <h2>GFD Clinical Checklist</h2>
+
+        <div class="checklist-row">
+            <div class="checklist-column">
+                <h3 style="color: #c0392b; font-size: 1.1em; margin-bottom: 10px;">🚩 Red Flags Identified</h3>
+                <div class="checkbox-group" id="redFlagsGroup">
+                    <label><input type="checkbox" value="T1 (Prior Refusal)"> T1: Prior GFD refusal</label>
+                    <label><input type="checkbox" value="T2 (Geographic Anomaly)"> T2: Geographic anomaly (>50 miles)</label>
+                    <label><input type="checkbox" value="T4 (Cash/Discount Card)"> T4: Cash or Discount Card used</label>
+                    <label><input type="checkbox" value="P1 (Early Fill)"> P1: Early Refill Request</label>
+                    <label><input type="checkbox" value="P2 (Out of Scope)"> P2: Prescriber out of scope/specialty</label>
+                    <label><input type="checkbox" value="P3 (Multiple Prescribers)"> P3: Multiple prescribers/pharmacies</label>
+                    <label><input type="checkbox" value="P5 (High Risk Combo)"> P5: High-Risk Combo (e.g., Opioid+Benzo)</label>
+                </div>
+            </div>
+
+            <div class="checklist-column">
+                <h3 style="color: #27ae60; font-size: 1.1em; margin-bottom: 10px;">✅ CRDs (Green Flags) Met</h3>
+                <div class="checkbox-group" id="greenFlagsGroup">
+                    <label><input type="checkbox" value="PDMP Reviewed and Clear"> CURES/PDMP Reviewed & Clear</label>
+                    <label><input type="checkbox" value="Diagnosis Code Provided"> Diagnosis Code Provided</label>
+                    <label><input type="checkbox" value="Naloxone on hand/offered"> Naloxone on hand / offered</label>
+                    <label><input type="checkbox" value="Established Relationship"> Established MD/Pt Relationship</label>
+                    <label><input type="checkbox" value="Treatment Plan Verified"> Treatment Plan Verified</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-row" style="margin-top: 15px;">
+            <label for="clinicalContext">Pharmacist Notes / Context (Optional)</label>
+            <textarea id="clinicalContext" rows="3" placeholder="E.g., Patient stated they lost their medication on vacation..."></textarea>
+        </div>
+
+        <button onclick="generateAIPrompt()" style="background-color: #8e44ad; margin-top: 10px;">Draft Message to Prescriber 🪄</button>
+
+        <div id="aiPromptOutput" style="display: none; margin-top: 20px; padding: 15px; background-color: #fdf5e6; border-left: 5px solid #e67e22; border-radius: 4px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap;"></div>
+
     </div>
 
     <script>
+        // ---------------------------------------------------------
+        // SECTION 1 LOGIC: NPI / NAME SEARCH
+        // ---------------------------------------------------------
         function switchMode() {
             const isNPI = document.getElementById('searchNPI').checked;
             document.getElementById('npiModeFields').style.display = isNPI ? 'block' : 'none';
@@ -230,7 +272,7 @@
             document.getElementById('npiInput').value = '';
             document.getElementById('firstNameInput').value = '';
             document.getElementById('lastNameInput').value = '';
-            document.getElementById('stateInput').value = 'CA'; // Resets to California
+            document.getElementById('stateInput').value = 'CA'; 
             document.getElementById('resultsContainer').innerHTML = '';
             document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('npiInput').focus(); 
@@ -301,13 +343,9 @@
                 const data = await response.json();
 
                 if (data.result_count > 0) {
-                    // Create all cards concurrently so the app doesn't freeze
                     const cardPromises = data.results.map(provider => createResultCard(provider));
                     const cards = await Promise.all(cardPromises);
-                    
-                    cards.forEach(card => {
-                        resultsContainer.appendChild(card);
-                    });
+                    cards.forEach(card => resultsContainer.appendChild(card));
                 } else {
                     showError("No matching prescribers found.");
                 }
@@ -321,7 +359,6 @@
         }
 
         async function createResultCard(provider) {
-            // Extract Name
             let name = "Name not found";
             if (provider.basic.organization_name) {
                 name = provider.basic.organization_name;
@@ -339,12 +376,10 @@
             if (provider.taxonomies && provider.taxonomies.length > 0) {
                 const primaryTax = provider.taxonomies.find(tax => tax.primary === true);
                 if (primaryTax) { specialty = primaryTax.desc; }
-                
                 const caTax = provider.taxonomies.find(tax => tax.state === 'CA' && tax.license);
                 if (caTax) { caLicense = caTax.license; }
             }
 
-            // Extract Addresses
             let primaryAddress = "Address not found";
             let phone = "N/A";
             let fax = "N/A";
@@ -361,10 +396,9 @@
                     phone = primary.telephone_number || phone;
                     fax = primary.fax_number || fax;
                     
-                    const mapUrl = `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(primaryAddress)}`;
+                    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(primaryAddress)}`;
                     mapLink = `<a href="${mapUrl}" target="_blank" class="action-link color-map">[ Map 📍 ]</a>`;
 
-                    // API Call to OpenStreetMap to get Building Type
                     try {
                         const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(primaryAddress)}&format=json&limit=1`);
                         const geoData = await geoRes.json();
@@ -372,20 +406,17 @@
                         if (geoData && geoData.length > 0) {
                             let typeStr = geoData[0].type.replace(/_/g, ' ');
                             typeStr = typeStr.charAt(0).toUpperCase() + typeStr.slice(1);
-                            
                             const safeTypes = ['Clinic', 'Hospital', 'Doctors', 'Dentist', 'Pharmacy'];
                             const riskTypes = ['House', 'Residential', 'Apartment', 'Detached'];
-                            
                             let badgeClass = 'badge-type-neutral';
                             if (safeTypes.some(t => typeStr.includes(t))) badgeClass = 'badge-type-safe';
                             if (riskTypes.some(t => typeStr.includes(t))) badgeClass = 'badge-type-risk';
-                            
                             locationTypeBadge = `<span class="${badgeClass}">🏢 ${typeStr}</span>`;
                         } else {
                             locationTypeBadge = `<span class="badge-type-neutral">🏢 Unknown Type</span>`;
                         }
                     } catch (e) {
-                        locationTypeBadge = ``; // Fail silently if OSM blocks request
+                        locationTypeBadge = ``; 
                     }
 
                     if (locations.length > 1) {
@@ -395,7 +426,7 @@
                             const addr = `${loc.address_1}, ${loc.city}, ${loc.state} ${loc.postal_code.substring(0, 5)}`;
                             const ph = loc.telephone_number || "N/A";
                             const fx = loc.fax_number || "N/A";
-                            const locMapUrl = `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(addr)}`;
+                            const locMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
                             
                             otherLocs += `
                                 <div style="margin-bottom: 8px;">
@@ -427,10 +458,7 @@
                 </div>
                 <div class="result-row">
                     <span class="result-label">CA License:</span> 
-                    ${caLicense !== 'N/A' 
-                        ? `<span class="badge-alt">${caLicense}</span> 
-                           <a href="#" class="action-link color-verify" onclick="verifyCALicense('${caLicense}', event)">[ Verify on CA Board ↗ ]</a>` 
-                        : 'N/A'}
+                    ${caLicense !== 'N/A' ? `<span class="badge-alt">${caLicense}</span> <a href="#" class="action-link color-verify" onclick="verifyCALicense('${caLicense}', event)">[ Verify on CA Board ↗ ]</a>` : 'N/A'}
                 </div>
                 <div class="result-row"><span class="result-label">Specialty:</span> ${specialty}</div>
                 
@@ -459,9 +487,103 @@
             errorMessage.style.display = 'block';
         }
 
-        document.addEventListener("keypress", function(event) {
+        document.getElementById("npiInput").addEventListener("keypress", function(event) {
             if (event.key === "Enter") { fetchProviderData(); }
         });
+
+
+        // ---------------------------------------------------------
+        // SECTION 2 LOGIC: MANUAL ADDRESS CHECK
+        // ---------------------------------------------------------
+        async function checkManualAddress() {
+            const addressInput = document.getElementById('manualAddressInput').value.trim();
+            const resultDiv = document.getElementById('manualAddressResult');
+            const btn = document.getElementById('manualAddressBtn');
+
+            if (!addressInput) {
+                alert("Please enter an address to check.");
+                return;
+            }
+
+            btn.innerText = "Analyzing...";
+            btn.disabled = true;
+            resultDiv.style.display = 'none';
+
+            try {
+                let locationTypeBadge = "";
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressInput)}`;
+                const mapLink = `<a href="${mapUrl}" target="_blank" class="action-link color-map">[ Map 📍 ]</a>`;
+
+                const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressInput)}&format=json&limit=1`);
+                const geoData = await geoRes.json();
+                
+                if (geoData && geoData.length > 0) {
+                    let typeStr = geoData[0].type.replace(/_/g, ' ');
+                    typeStr = typeStr.charAt(0).toUpperCase() + typeStr.slice(1);
+                    
+                    const safeTypes = ['Clinic', 'Hospital', 'Doctors', 'Dentist', 'Pharmacy'];
+                    const riskTypes = ['House', 'Residential', 'Apartment', 'Detached'];
+                    
+                    let badgeClass = 'badge-type-neutral';
+                    if (safeTypes.some(t => typeStr.includes(t))) badgeClass = 'badge-type-safe';
+                    if (riskTypes.some(t => typeStr.includes(t))) badgeClass = 'badge-type-risk';
+                    
+                    locationTypeBadge = `<span class="${badgeClass}">🏢 ${typeStr}</span>`;
+                } else {
+                    locationTypeBadge = `<span class="badge-type-neutral">🏢 Unknown Type</span>`;
+                }
+
+                resultDiv.innerHTML = `
+                    <div style="margin-bottom: 5px;"><strong>Entered Address:</strong> ${addressInput}</div>
+                    <div style="margin-top: 10px;"><strong>Analysis:</strong> ${locationTypeBadge} ${mapLink}</div>
+                `;
+                resultDiv.style.display = 'block';
+
+            } catch (error) {
+                console.error("Address Check Error:", error);
+                alert("Failed to analyze address. Please try again.");
+            } finally {
+                btn.innerText = "Analyze Address 📍";
+                btn.disabled = false;
+            }
+        }
+
+
+        // ---------------------------------------------------------
+        // SECTION 3 LOGIC: GFD CHECKLIST AI PROMPT GENERATOR
+        // ---------------------------------------------------------
+        function generateAIPrompt() {
+            const redCheckboxes = document.querySelectorAll('#redFlagsGroup input:checked');
+            let redFlags = Array.from(redCheckboxes).map(cb => cb.value);
+            
+            const greenCheckboxes = document.querySelectorAll('#greenFlagsGroup input:checked');
+            let greenFlags = Array.from(greenCheckboxes).map(cb => cb.value);
+            
+            const context = document.getElementById('clinicalContext').value.trim();
+
+            if (redFlags.length === 0) {
+                alert("Please select at least one Red Flag to generate a message.");
+                return;
+            }
+
+            let aiPrompt = `SYSTEM INSTRUCTION: You are a clinical AI assistant. Draft an SBAR message to the prescriber under 231 characters to clear the identified red flags. Do not ask for information we already have from the green flags.\n\n`;
+            
+            aiPrompt += `RED FLAGS IDENTIFIED:\n- ${redFlags.join('\n- ')}\n\n`;
+            
+            if (greenFlags.length > 0) {
+                aiPrompt += `GREEN FLAGS ALREADY MET:\n- ${greenFlags.join('\n- ')}\n\n`;
+            } else {
+                aiPrompt += `GREEN FLAGS ALREADY MET: None.\n\n`;
+            }
+
+            if (context) {
+                aiPrompt += `CLINICAL CONTEXT FROM PHARMACIST:\n"${context}"\n\n`;
+            }
+
+            const outputDiv = document.getElementById('aiPromptOutput');
+            outputDiv.style.display = 'block';
+            outputDiv.innerText = "Below is the exact data string that will be sent to the AI API:\n\n" + aiPrompt;
+        }
     </script>
 </body>
 </html>
