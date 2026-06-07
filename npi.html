@@ -569,15 +569,14 @@ Format exactly with headings: "📠 FAX SCRIPT", "📝 INTERIM NOTE", and "✂�
 
             const userMessage = `RED FLAGS IDENTIFIED: ${redFlags.join(', ')}. \nGREEN FLAGS ALREADY MET: ${greenFlags.length > 0 ? greenFlags.join(', ') : 'None'}. \nCLINICAL CONTEXT: ${context || 'None provided.'}`;
 
-            // Prepare UI for loading
             generateBtn.innerText = "Analyzing with AI... ⏳";
             generateBtn.disabled = true;
             outputDiv.style.display = 'block';
             outputDiv.innerHTML = "<em>Connecting to Google Gemini...</em>";
 
             try {
-                // Call Gemini REST API directly
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                // Call Gemini REST API directly using gemini-1.5-flash-latest
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -587,15 +586,19 @@ Format exactly with headings: "📠 FAX SCRIPT", "📝 INTERIM NOTE", and "✂�
                 });
 
                 if (!response.ok) {
-                    throw new Error(`API Error: ${response.status} - Check if your API key is valid.`);
+                    // Extract exact error message from Google if available
+                    let errorText = "Unknown error";
+                    try {
+                        const errData = await response.json();
+                        errorText = errData.error.message;
+                    } catch(e) {}
+                    throw new Error(`Google API Error ${response.status}: ${errorText}`);
                 }
 
                 const data = await response.json();
                 
-                // Extract the text from Gemini's response
                 const aiResponseText = data.candidates[0].content.parts[0].text;
                 
-                // Format the output slightly to look clean in HTML
                 const formattedHtml = aiResponseText
                     .replace(/📠 FAX SCRIPT/g, '<div class="ai-heading">📠 Prescriber Communication Script (Fax)</div>')
                     .replace(/📝 INTERIM NOTE/g, '<div class="ai-heading">📝 Interim Rx Queue Note</div>')
