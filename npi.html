@@ -120,7 +120,7 @@
             padding: 8px; font-size: 0.85em; margin-bottom: 6px;
         }
         .zip-grid { display: flex; gap: 10px; margin-bottom: 6px; }
-        .sub-checkboxes { display: flex; gap: 15px; margin-bottom: 8px; font-size: 0.85em; color: #2c3e50; }
+        .sub-checkboxes { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 8px; font-size: 0.85em; color: #2c3e50; }
         
         /* AI Output Box */
         #aiPromptContainer { 
@@ -212,6 +212,11 @@
         <hr style="border: 0; border-top: 2px dashed #ecf0f1; margin: 30px 0;">
         <h2>GFD Clinical Checklist</h2>
 
+        <div class="input-row" style="background: #fdf2e9; padding: 12px; border-radius: 4px; border: 1px solid #fdebd0; margin-bottom: 20px;">
+            <label for="pharmacyZip" style="color: #d35400;">📍 Your Pharmacy ZIP Code (Auto-saves to browser)</label>
+            <input type="text" id="pharmacyZip" placeholder="e.g., 90210" oninput="savePharmacyZip()" maxlength="5">
+        </div>
+
         <div class="checklist-row">
             <div class="checklist-column" id="redFlagsGroup">
                 <h3 style="color: #c0392b; font-size: 1.1em; margin-bottom: 10px;">🚩 Red Flags Identified</h3>
@@ -224,15 +229,23 @@
                 <div class="flag-item">
                     <label><input type="checkbox" class="red-flag-cb" value="T2 (Geographic Anomaly)" onchange="toggleContext(this, 'ctx_t2')"> T2: Geographic anomaly (>50 miles)</label>
                     <div id="ctx_t2" class="flag-context">
-                        <div class="sub-checkboxes">
+                        
+                        <div class="sub-checkboxes" style="margin-bottom: 8px; font-weight: bold;">
+                            <label><input type="checkbox" id="t2_patient_anom" onchange="toggleZipInput('patient')"> Patient > 50 miles</label>
+                            <label><input type="checkbox" id="t2_presc_anom" onchange="toggleZipInput('prescriber')"> Prescriber > 50 miles</label>
+                        </div>
+                        
+                        <div class="zip-grid">
+                            <input type="text" id="t2_pt_zip" placeholder="Patient ZIP" style="display:none;" maxlength="5">
+                            <input type="text" id="t2_md_zip" placeholder="Prescriber ZIP" style="display:none;" maxlength="5">
+                        </div>
+
+                        <div class="sub-checkboxes" style="margin-bottom: 8px;">
                             <label><input type="checkbox" id="t2_susp_student"> Suspected Student</label>
                             <label><input type="checkbox" id="t2_conf_student"> Confirmed Student</label>
                         </div>
-                        <div class="zip-grid">
-                            <input type="text" id="t2_md_zip" placeholder="MD ZIP">
-                            <input type="text" id="t2_pt_zip" placeholder="Pt ZIP">
-                        </div>
-                        <input type="text" class="flag-note" placeholder="Additional T2 context (e.g., patient moved)...">
+                        
+                        <input type="text" class="flag-note" placeholder="Additional context (e.g., patient moved)...">
                     </div>
                 </div>
 
@@ -303,7 +316,7 @@
         </div>
 
         <div id="aiPromptContainer">
-            <button id="copyPromptBtn" class="copy-btn" onclick="copyToClipboard()">Copy Prompt 📋</button>
+            <button id="copyPromptBtn" class="copy-btn" onclick="copyToClipboardAndOpen()">Copy & Open Gemini 📋</button>
             <div id="promptText"></div>
         </div>
 
@@ -313,6 +326,18 @@
     </div>
 
     <script>
+        // Run on load
+        window.onload = function() {
+            // Load Pharmacy ZIP from storage
+            const savedZip = localStorage.getItem('gfd_pharmacy_zip');
+            if(savedZip) { document.getElementById('pharmacyZip').value = savedZip; }
+        };
+
+        function savePharmacyZip() {
+            const zip = document.getElementById('pharmacyZip').value.trim();
+            localStorage.setItem('gfd_pharmacy_zip', zip);
+        }
+
         // ---------------------------------------------------------
         // SECTION 1 LOGIC: NPI / NAME SEARCH
         // ---------------------------------------------------------
@@ -530,7 +555,6 @@
             if (event.key === "Enter") { fetchProviderData(); }
         });
 
-
         // ---------------------------------------------------------
         // SECTION 2 LOGIC: MANUAL ADDRESS CHECK
         // ---------------------------------------------------------
@@ -586,7 +610,6 @@
             }
         }
 
-
         // ---------------------------------------------------------
         // SECTION 3 LOGIC: DYNAMIC CHECKLIST & PROMPT GENERATOR
         // ---------------------------------------------------------
@@ -598,28 +621,45 @@
                 contextDiv.style.display = 'block';
             } else {
                 contextDiv.style.display = 'none';
-                // Clear inputs inside this context box when unchecked to prevent ghost data
                 contextDiv.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
                 contextDiv.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
             }
         }
 
+        function toggleZipInput(type) {
+            if (type === 'patient') {
+                const isChecked = document.getElementById('t2_patient_anom').checked;
+                document.getElementById('t2_pt_zip').style.display = isChecked ? 'block' : 'none';
+                if (!isChecked) document.getElementById('t2_pt_zip').value = '';
+            } else if (type === 'prescriber') {
+                const isChecked = document.getElementById('t2_presc_anom').checked;
+                document.getElementById('t2_md_zip').style.display = isChecked ? 'block' : 'none';
+                if (!isChecked) document.getElementById('t2_md_zip').value = '';
+            }
+        }
+
         function clearChecklistForm() {
-            // Uncheck all main flags and trigger their onchange to hide context boxes
             document.querySelectorAll('.flag-item > label > input[type="checkbox"]').forEach(cb => {
                 cb.checked = false;
                 cb.dispatchEvent(new Event('change'));
             });
-            
             document.getElementById('clinicalContext').value = '';
             document.getElementById('aiPromptContainer').style.display = 'none';
             document.getElementById('promptText').innerText = '';
         }
 
+        // HIPAA Sanitize Function
+        function sanitizeText(text) {
+            // Replaces two consecutive capitalized words (likely a patient name)
+            // but explicitly skips it if it's preceded by "Dr. ", "Dr ", or "Doctor "
+            return text.replace(/(?<!Dr\. |Dr |Doctor )([A-Z][a-z]+ [A-Z][a-z]+)/g, "[REDACTED_NAME]");
+        }
+
         function generateAIPrompt() {
             const redCheckboxes = document.querySelectorAll('.red-flag-cb:checked');
             const greenCheckboxes = document.querySelectorAll('.green-flag-cb:checked');
-            const globalContext = document.getElementById('clinicalContext').value.trim();
+            const globalContext = sanitizeText(document.getElementById('clinicalContext').value.trim());
+            const pharmacyZip = document.getElementById('pharmacyZip').value.trim();
 
             if (redCheckboxes.length === 0) {
                 alert("Please select at least one Red Flag to generate a message.");
@@ -628,7 +668,6 @@
 
             let promptString = `SYSTEM INSTRUCTION: You are an expert Clinical Decision Support AI assisting a California pharmacist with a Good Faith Dispensing (eGFD) workflow.\nYour task is to review the selected Red Flags and Green Flags, and generate copy/paste notes alongside patient interview questions.\n\nIMPORTANT INSTRUCTIONS:\n1. Fax Script: Draft an SBAR message to the prescriber under 231 characters. Heavily abbreviate. Explicitly ask for what is needed to clear the RED FLAGS. Do NOT ask for information we already have from the GREEN FLAGS.\n2. Interim Note: Draft a 1-sentence note for the pharmacy queue (e.g., "eGFD pending. Fax sent to MD for X, awaiting reply.")\n3. eGFD Portal Notes: Draft a 1-2 sentence objective, Board-of-Pharmacy compliant note for EACH individual Red Flag and Green Flag identified.\n4. Patient Interview Questions: Draft 2-3 targeted, polite questions for the technician or pharmacist to ask the patient (in person or by phone) to clarify the situation and help resolve the identified Red Flags.\n\nFormat exactly with headings: "📠 FAX SCRIPT", "📝 INTERIM NOTE", "✂️ eGFD PORTAL NOTES", and "🗣️ PATIENT INTERVIEW QUESTIONS". Do not use markdown bolding (**) in your output, keep it plain text under the emojis.\n\n`;
 
-            // Gather Red Flags and their specific contexts
             promptString += `RED FLAGS IDENTIFIED:\n`;
             redCheckboxes.forEach(cb => {
                 let flagText = `- ${cb.value}`;
@@ -636,19 +675,23 @@
                 const contextDiv = cb.parentElement.nextElementSibling;
                 
                 if (contextDiv) {
-                    // Check for general notes
                     const noteInput = contextDiv.querySelector('.flag-note');
-                    if (noteInput && noteInput.value.trim()) details.push(`Notes: ${noteInput.value.trim()}`);
+                    if (noteInput && noteInput.value.trim()) details.push(`Notes: ${sanitizeText(noteInput.value.trim())}`);
                     
-                    // Specific logic for T2 (Geographic)
                     if (cb.value.includes('T2')) {
+                        if (pharmacyZip) details.push(`Pharmacy ZIP: ${pharmacyZip}`);
+
+                        if (document.getElementById('t2_patient_anom').checked) {
+                            const ptZip = document.getElementById('t2_pt_zip').value.trim();
+                            details.push(`Patient >50mi Anomaly${ptZip ? ' (Patient ZIP: '+ptZip+')' : ''}`);
+                        }
+                        if (document.getElementById('t2_presc_anom').checked) {
+                            const mdZip = document.getElementById('t2_md_zip').value.trim();
+                            details.push(`Prescriber >50mi Anomaly${mdZip ? ' (Prescriber ZIP: '+mdZip+')' : ''}`);
+                        }
+
                         if (document.getElementById('t2_susp_student').checked) details.push("Suspected Student");
                         if (document.getElementById('t2_conf_student').checked) details.push("Confirmed Student");
-                        
-                        const mdZip = document.getElementById('t2_md_zip').value.trim();
-                        const ptZip = document.getElementById('t2_pt_zip').value.trim();
-                        if (mdZip) details.push(`MD ZIP: ${mdZip}`);
-                        if (ptZip) details.push(`Patient ZIP: ${ptZip}`);
                     }
                 }
                 
@@ -659,7 +702,6 @@
             });
             promptString += `\n`;
 
-            // Gather Green Flags and their specific contexts
             if (greenCheckboxes.length > 0) {
                 promptString += `GREEN FLAGS ALREADY MET:\n`;
                 greenCheckboxes.forEach(cb => {
@@ -667,7 +709,7 @@
                     const contextDiv = cb.parentElement.nextElementSibling;
                     if (contextDiv) {
                         const noteInput = contextDiv.querySelector('.flag-note');
-                        if (noteInput && noteInput.value.trim()) flagText += ` (Notes: ${noteInput.value.trim()})`;
+                        if (noteInput && noteInput.value.trim()) flagText += ` (Notes: ${sanitizeText(noteInput.value.trim())})`;
                     }
                     promptString += `${flagText}\n`;
                 });
@@ -684,21 +726,25 @@
             document.getElementById('aiPromptContainer').style.display = 'block';
             
             const copyBtn = document.getElementById('copyPromptBtn');
-            copyBtn.innerText = "Copy Prompt 📋";
+            copyBtn.innerText = "Copy & Open Gemini 📋";
             copyBtn.style.backgroundColor = "#2980b9";
         }
 
-        function copyToClipboard() {
+        function copyToClipboardAndOpen() {
             const textToCopy = document.getElementById('promptText').innerText;
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const copyBtn = document.getElementById('copyPromptBtn');
-                copyBtn.innerText = "Copied! ✅";
+                copyBtn.innerText = "Copied! Opening Tab... ✅";
                 copyBtn.style.backgroundColor = "#27ae60"; 
                 
                 setTimeout(() => {
-                    copyBtn.innerText = "Copy Prompt 📋";
+                    window.open('https://gemini.google.com/', '_blank');
+                }, 500);
+
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy & Open Gemini 📋";
                     copyBtn.style.backgroundColor = "#2980b9";
-                }, 2000);
+                }, 3000);
             }).catch(err => {
                 alert("Failed to copy text. Your browser may not support this feature.");
             });
