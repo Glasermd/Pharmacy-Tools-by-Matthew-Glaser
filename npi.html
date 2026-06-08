@@ -32,11 +32,8 @@
         }
         /* Toggle Switch Styling */
         .toggle-group {
-            display: flex;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            overflow: hidden;
+            display: flex; margin-bottom: 20px; border: 1px solid #ccc;
+            border-radius: 4px; overflow: hidden;
         }
         .toggle-group label {
             flex: 1; text-align: center; padding: 10px; background: #f8f9fa;
@@ -73,7 +70,11 @@
         
         .clear-btn { flex: 1; background-color: #95a5a6; }
         .clear-btn:hover { background-color: #7f8c8d; }
-        
+        .reset-all-btn { background-color: #e74c3c; width: 100%; margin-top: 10px; }
+        .reset-all-btn:hover { background-color: #c0392b; }
+        .copy-btn { background-color: #2980b9; margin-bottom: 10px; font-size: 14px; padding: 8px;}
+        .copy-btn:hover { background-color: #2471a3; }
+
         /* Results Styling */
         #resultsContainer { margin-top: 25px; }
         .result-card {
@@ -84,54 +85,55 @@
         .result-label { font-weight: 600; color: #2c3e50; }
         
         /* Badges */
-        .badge {
-            background: #34495e; color: white; padding: 3px 6px; 
-            border-radius: 3px; font-size: 0.8em; margin-left: 5px;
-        }
-        .badge-alt {
-            background: #8e44ad; color: white; padding: 3px 6px; 
-            border-radius: 3px; font-size: 0.8em; margin-left: 5px;
-        }
-        /* Building Type Badges */
+        .badge { background: #34495e; color: white; padding: 3px 6px; border-radius: 3px; font-size: 0.8em; margin-left: 5px; }
+        .badge-alt { background: #8e44ad; color: white; padding: 3px 6px; border-radius: 3px; font-size: 0.8em; margin-left: 5px; }
         .badge-type-safe { background: #27ae60; color: white; padding: 3px 6px; border-radius: 3px; font-size: 0.8em; margin-left: 5px; }
         .badge-type-risk { background: #e74c3c; color: white; padding: 3px 6px; border-radius: 3px; font-size: 0.8em; margin-left: 5px; font-weight: bold;}
         .badge-type-neutral { background: #95a5a6; color: white; padding: 3px 6px; border-radius: 3px; font-size: 0.8em; margin-left: 5px; }
 
-        .nppes-link {
-            display: inline-block; margin-top: 10px; font-size: 0.85em; font-weight: bold;
-            color: #d35400; text-decoration: none;
-        }
+        .nppes-link { display: inline-block; margin-top: 10px; font-size: 0.85em; font-weight: bold; color: #d35400; text-decoration: none; }
         .nppes-link:hover { text-decoration: underline; }
-
-        /* Action Links (Verify, Map, Search) */
-        .action-link {
-            font-size: 0.85em; font-weight: bold; margin-left: 8px;
-            text-decoration: none; cursor: pointer;
-        }
+        .action-link { font-size: 0.85em; font-weight: bold; margin-left: 8px; text-decoration: none; cursor: pointer; }
         .action-link:hover { text-decoration: underline; }
         .color-verify { color: #e67e22; }
         .color-map { color: #27ae60; }
         .color-search { color: #34495e; }
         
-        /* Error Message */
-        #errorMessage {
-            display: none; margin-top: 15px; color: #c0392b; background-color: #fdeaea;
-            padding: 10px; border-radius: 4px; font-weight: 600; text-align: center;
-        }
+        #errorMessage { display: none; margin-top: 15px; color: #c0392b; background-color: #fdeaea; padding: 10px; border-radius: 4px; font-weight: 600; text-align: center; }
 
-        /* Checklist Styling */
+        /* Checklist & Expanding Context Styling */
         .checklist-row { display: flex; gap: 20px; }
         .checklist-column { flex: 1; }
-        .checkbox-group label {
-            display: block; margin-bottom: 8px; font-size: 0.95em;
-            color: #34495e; cursor: pointer;
+        
+        .flag-item { margin-bottom: 8px; }
+        .flag-item > label { 
+            display: block; font-size: 0.95em; color: #34495e; cursor: pointer; font-weight: 500;
         }
-        .checkbox-group input[type="checkbox"] {
-            margin-right: 8px; transform: scale(1.2); cursor: pointer;
+        .flag-item input[type="checkbox"] { margin-right: 8px; transform: scale(1.2); cursor: pointer; }
+        
+        .flag-context {
+            display: none;
+            margin-top: 6px; margin-left: 24px; padding: 10px;
+            background-color: #f8f9fa; border-left: 3px solid #bdc3c7; border-radius: 4px;
         }
-        @media (max-width: 600px) {
-            .checklist-row { flex-direction: column; }
+        .flag-context input[type="text"] {
+            padding: 8px; font-size: 0.85em; margin-bottom: 6px;
         }
+        .zip-grid { display: flex; gap: 10px; margin-bottom: 6px; }
+        .sub-checkboxes { display: flex; gap: 15px; margin-bottom: 8px; font-size: 0.85em; color: #2c3e50; }
+        
+        /* AI Output Box */
+        #aiPromptContainer { 
+            display: none; margin-top: 20px; padding: 15px; 
+            background-color: #fdf5e6; border-left: 5px solid #e67e22; 
+            border-radius: 4px;
+        }
+        #promptText {
+            font-family: monospace; font-size: 0.9em; white-space: pre-wrap; 
+            color: #2c3e50; background: #fff; padding: 10px; border: 1px solid #ccc; border-radius: 4px;
+        }
+
+        @media (max-width: 600px) { .checklist-row { flex-direction: column; } }
     </style>
 </head>
 <body>
@@ -142,7 +144,6 @@
         <div class="toggle-group">
             <input type="radio" id="searchNPI" name="searchMode" value="npi" checked onchange="switchMode()">
             <label for="searchNPI">Search by NPI</label>
-            
             <input type="radio" id="searchName" name="searchMode" value="name" onchange="switchMode()">
             <label for="searchName">Search by Name</label>
         </div>
@@ -168,39 +169,26 @@
             <div class="input-row">
                 <label for="stateInput">State</label>
                 <select id="stateInput">
-                    <option value="AL">Alabama</option><option value="AK">Alaska</option>
-                    <option value="AZ">Arizona</option><option value="AR">Arkansas</option>
-                    <option value="CA" selected>California</option><option value="CO">Colorado</option>
-                    <option value="CT">Connecticut</option><option value="DE">Delaware</option>
-                    <option value="DC">District Of Columbia</option><option value="FL">Florida</option>
-                    <option value="GA">Georgia</option><option value="HI">Hawaii</option>
-                    <option value="ID">Idaho</option><option value="IL">Illinois</option>
-                    <option value="IN">Indiana</option><option value="IA">Iowa</option>
-                    <option value="KS">Kansas</option><option value="KY">Kentucky</option>
-                    <option value="LA">Louisiana</option><option value="ME">Maine</option>
-                    <option value="MD">Maryland</option><option value="MA">Massachusetts</option>
-                    <option value="MI">Michigan</option><option value="MN">Minnesota</option>
-                    <option value="MS">Mississippi</option><option value="MO">Missouri</option>
-                    <option value="MT">Montana</option><option value="NE">Nebraska</option>
-                    <option value="NV">Nevada</option><option value="NH">New Hampshire</option>
-                    <option value="NJ">New Jersey</option><option value="NM">New Mexico</option>
-                    <option value="NY">New York</option><option value="NC">North Carolina</option>
-                    <option value="ND">North Dakota</option><option value="OH">Ohio</option>
-                    <option value="OK">Oklahoma</option><option value="OR">Oregon</option>
-                    <option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option>
-                    <option value="SC">South Carolina</option><option value="SD">South Dakota</option>
-                    <option value="TN">Tennessee</option><option value="TX">Texas</option>
-                    <option value="UT">Utah</option><option value="VT">Vermont</option>
-                    <option value="VA">Virginia</option><option value="WA">Washington</option>
-                    <option value="WV">West Virginia</option><option value="WI">Wisconsin</option>
-                    <option value="WY">Wyoming</option>
+                    <option value="AL">Alabama</option><option value="AK">Alaska</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option>
+                    <option value="CA" selected>California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option><option value="DE">Delaware</option>
+                    <option value="DC">District Of Columbia</option><option value="FL">Florida</option><option value="GA">Georgia</option><option value="HI">Hawaii</option>
+                    <option value="ID">Idaho</option><option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option>
+                    <option value="KS">Kansas</option><option value="KY">Kentucky</option><option value="LA">Louisiana</option><option value="ME">Maine</option>
+                    <option value="MD">Maryland</option><option value="MA">Massachusetts</option><option value="MI">Michigan</option><option value="MN">Minnesota</option>
+                    <option value="MS">Mississippi</option><option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option>
+                    <option value="NV">Nevada</option><option value="NH">New Hampshire</option><option value="NJ">New Jersey</option><option value="NM">New Mexico</option>
+                    <option value="NY">New York</option><option value="NC">North Carolina</option><option value="ND">North Dakota</option><option value="OH">Ohio</option>
+                    <option value="OK">Oklahoma</option><option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option>
+                    <option value="SC">South Carolina</option><option value="SD">South Dakota</option><option value="TN">Tennessee</option><option value="TX">Texas</option>
+                    <option value="UT">Utah</option><option value="VT">Vermont</option><option value="VA">Virginia</option><option value="WA">Washington</option>
+                    <option value="WV">West Virginia</option><option value="WI">Wisconsin</option><option value="WY">Wyoming</option>
                 </select>
             </div>
         </div>
         
         <div class="button-group">
             <button id="searchBtn" onclick="fetchProviderData()">Search Registry</button>
-            <button id="clearBtn" class="clear-btn" onclick="clearForm()">Clear</button>
+            <button class="clear-btn" onclick="clearForm()">Clear Section</button>
         </div>
 
         <div id="errorMessage"></div>
@@ -213,7 +201,11 @@
         <div class="input-row">
             <input type="text" id="manualAddressInput" placeholder="e.g., 123 Main St, Los Angeles, CA 90001">
         </div>
-        <button id="manualAddressBtn" onclick="checkManualAddress()" style="background-color: #2980b9;">Analyze Address 📍</button>
+        
+        <div class="button-group">
+            <button id="manualAddressBtn" onclick="checkManualAddress()" style="background-color: #2980b9;">Analyze Address 📍</button>
+            <button class="clear-btn" onclick="clearAddressForm()">Clear Section</button>
+        </div>
         
         <div id="manualAddressResult" style="display: none; margin-top: 15px; padding: 15px; background-color: #e8f4f8; border-left: 5px solid #2980b9; border-radius: 4px; font-size: 0.95em;"></div>
 
@@ -221,39 +213,102 @@
         <h2>GFD Clinical Checklist</h2>
 
         <div class="checklist-row">
-            <div class="checklist-column">
+            <div class="checklist-column" id="redFlagsGroup">
                 <h3 style="color: #c0392b; font-size: 1.1em; margin-bottom: 10px;">🚩 Red Flags Identified</h3>
-                <div class="checkbox-group" id="redFlagsGroup">
-                    <label><input type="checkbox" value="T1 (Prior Refusal)"> T1: Prior GFD refusal</label>
-                    <label><input type="checkbox" value="T2 (Geographic Anomaly)"> T2: Geographic anomaly (>50 miles)</label>
-                    <label><input type="checkbox" value="T4 (Cash/Discount Card)"> T4: Cash or Discount Card used</label>
-                    <label><input type="checkbox" value="P1 (Early Fill)"> P1: Early Refill Request</label>
-                    <label><input type="checkbox" value="P2 (Out of Scope)"> P2: Prescriber out of scope/specialty</label>
-                    <label><input type="checkbox" value="P3 (Multiple Prescribers)"> P3: Multiple prescribers/pharmacies</label>
-                    <label><input type="checkbox" value="P5 (High Risk Combo)"> P5: High-Risk Combo (e.g., Opioid+Benzo)</label>
+                
+                <div class="flag-item">
+                    <label><input type="checkbox" class="red-flag-cb" value="T1 (Prior Refusal)" onchange="toggleContext(this, 'ctx_t1')"> T1: Prior GFD refusal</label>
+                    <div id="ctx_t1" class="flag-context"><input type="text" class="flag-note" placeholder="Details (e.g., Previously refused on 5/12)..."></div>
+                </div>
+
+                <div class="flag-item">
+                    <label><input type="checkbox" class="red-flag-cb" value="T2 (Geographic Anomaly)" onchange="toggleContext(this, 'ctx_t2')"> T2: Geographic anomaly (>50 miles)</label>
+                    <div id="ctx_t2" class="flag-context">
+                        <div class="sub-checkboxes">
+                            <label><input type="checkbox" id="t2_susp_student"> Suspected Student</label>
+                            <label><input type="checkbox" id="t2_conf_student"> Confirmed Student</label>
+                        </div>
+                        <div class="zip-grid">
+                            <input type="text" id="t2_md_zip" placeholder="MD ZIP">
+                            <input type="text" id="t2_pt_zip" placeholder="Pt ZIP">
+                        </div>
+                        <input type="text" class="flag-note" placeholder="Additional T2 context (e.g., patient moved)...">
+                    </div>
+                </div>
+
+                <div class="flag-item">
+                    <label><input type="checkbox" class="red-flag-cb" value="T4 (Cash/Discount Card)" onchange="toggleContext(this, 'ctx_t4')"> T4: Cash or Discount Card used</label>
+                    <div id="ctx_t4" class="flag-context"><input type="text" class="flag-note" placeholder="Details (e.g., Patient stated lost insurance)..."></div>
+                </div>
+
+                <div class="flag-item">
+                    <label><input type="checkbox" class="red-flag-cb" value="P1 (Early Fill)" onchange="toggleContext(this, 'ctx_p1')"> P1: Early Refill Request</label>
+                    <div id="ctx_p1" class="flag-context"><input type="text" class="flag-note" placeholder="Details (e.g., 5 days early, going on vacation)..."></div>
+                </div>
+
+                <div class="flag-item">
+                    <label><input type="checkbox" class="red-flag-cb" value="P2 (Out of Scope)" onchange="toggleContext(this, 'ctx_p2')"> P2: Prescriber out of scope</label>
+                    <div id="ctx_p2" class="flag-context"><input type="text" class="flag-note" placeholder="Details (e.g., Dentist prescribing Adderall)..."></div>
+                </div>
+
+                <div class="flag-item">
+                    <label><input type="checkbox" class="red-flag-cb" value="P3 (Multiple Prescribers)" onchange="toggleContext(this, 'ctx_p3')"> P3: Multiple prescribers/pharmacies</label>
+                    <div id="ctx_p3" class="flag-context"><input type="text" class="flag-note" placeholder="Details (e.g., CURES shows 3 MDs in 30 days)..."></div>
+                </div>
+
+                <div class="flag-item">
+                    <label><input type="checkbox" class="red-flag-cb" value="P5 (High Risk Combo)" onchange="toggleContext(this, 'ctx_p5')"> P5: High-Risk Combo</label>
+                    <div id="ctx_p5" class="flag-context"><input type="text" class="flag-note" placeholder="Details (e.g., Opioid + Benzo)..."></div>
                 </div>
             </div>
 
-            <div class="checklist-column">
+            <div class="checklist-column" id="greenFlagsGroup">
                 <h3 style="color: #27ae60; font-size: 1.1em; margin-bottom: 10px;">✅ CRDs (Green Flags) Met</h3>
-                <div class="checkbox-group" id="greenFlagsGroup">
-                    <label><input type="checkbox" value="PDMP Reviewed and Clear"> CURES/PDMP Reviewed & Clear</label>
-                    <label><input type="checkbox" value="Diagnosis Code Provided"> Diagnosis Code Provided</label>
-                    <label><input type="checkbox" value="Naloxone on hand/offered"> Naloxone on hand / offered</label>
-                    <label><input type="checkbox" value="Established Relationship"> Established MD/Pt Relationship</label>
-                    <label><input type="checkbox" value="Treatment Plan Verified"> Treatment Plan Verified</label>
+                
+                <div class="flag-item">
+                    <label><input type="checkbox" class="green-flag-cb" value="PDMP Reviewed and Clear" onchange="toggleContext(this, 'ctx_g1')"> CURES/PDMP Reviewed & Clear</label>
+                    <div id="ctx_g1" class="flag-context"><input type="text" class="flag-note" placeholder="Notes..."></div>
+                </div>
+
+                <div class="flag-item">
+                    <label><input type="checkbox" class="green-flag-cb" value="Diagnosis Code Provided" onchange="toggleContext(this, 'ctx_g2')"> Diagnosis Code Provided</label>
+                    <div id="ctx_g2" class="flag-context"><input type="text" class="flag-note" placeholder="Enter ICD-10 or Diagnosis..."></div>
+                </div>
+
+                <div class="flag-item">
+                    <label><input type="checkbox" class="green-flag-cb" value="Naloxone Offered/Dispensed" onchange="toggleContext(this, 'ctx_g3')"> Naloxone on hand / offered</label>
+                    <div id="ctx_g3" class="flag-context"><input type="text" class="flag-note" placeholder="Notes..."></div>
+                </div>
+
+                <div class="flag-item">
+                    <label><input type="checkbox" class="green-flag-cb" value="Established Relationship" onchange="toggleContext(this, 'ctx_g4')"> Established MD/Pt Relationship</label>
+                    <div id="ctx_g4" class="flag-context"><input type="text" class="flag-note" placeholder="How verified? (e.g., Profile history)..."></div>
+                </div>
+
+                <div class="flag-item">
+                    <label><input type="checkbox" class="green-flag-cb" value="Treatment Plan Verified" onchange="toggleContext(this, 'ctx_g5')"> Treatment Plan Verified</label>
+                    <div id="ctx_g5" class="flag-context"><input type="text" class="flag-note" placeholder="Notes..."></div>
                 </div>
             </div>
         </div>
 
         <div class="input-row" style="margin-top: 15px;">
-            <label for="clinicalContext">Pharmacist Notes / Context (Optional)</label>
-            <textarea id="clinicalContext" rows="3" placeholder="E.g., Patient stated they lost their medication on vacation..."></textarea>
+            <label for="clinicalContext">General Pharmacist Notes (Optional)</label>
+            <textarea id="clinicalContext" rows="2" placeholder="Any overriding context not captured above..."></textarea>
         </div>
 
-        <button onclick="generateAIPrompt()" style="background-color: #8e44ad; margin-top: 10px;">Draft Message to Prescriber 🪄</button>
+        <div class="button-group" style="margin-top: 10px;">
+            <button onclick="generateAIPrompt()" style="background-color: #8e44ad;">Generate AI Prompt 🪄</button>
+            <button class="clear-btn" onclick="clearChecklistForm()">Clear Section</button>
+        </div>
 
-        <div id="aiPromptOutput" style="display: none; margin-top: 20px; padding: 15px; background-color: #fdf5e6; border-left: 5px solid #e67e22; border-radius: 4px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap;"></div>
+        <div id="aiPromptContainer">
+            <button id="copyPromptBtn" class="copy-btn" onclick="copyToClipboard()">Copy Prompt 📋</button>
+            <div id="promptText"></div>
+        </div>
+
+        <hr style="border: 0; border-top: 2px solid #bdc3c7; margin: 40px 0 20px 0;">
+        <button class="reset-all-btn" onclick="resetEntireApp()">Reset Entire Worksheet 🔄</button>
 
     </div>
 
@@ -275,7 +330,7 @@
             document.getElementById('stateInput').value = 'CA'; 
             document.getElementById('resultsContainer').innerHTML = '';
             document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('npiInput').focus(); 
+            if(document.getElementById('searchNPI').checked) { document.getElementById('npiInput').focus(); }
         }
 
         function toggleLocations(element, event) {
@@ -300,7 +355,6 @@
                     event.target.innerText = "[ Verify on CA Board ↗ ]"; 
                 }, 600);
             }).catch(err => {
-                console.error('Could not copy text: ', err);
                 window.open('https://search.dca.ca.gov/', '_blank');
             });
         }
@@ -313,25 +367,17 @@
 
             resultsContainer.innerHTML = '';
             errorMessage.style.display = 'none';
-
-            let apiUrl = `/api/npi?version=2.1&limit=10`; 
+            let apiUrl = `https://npiregistry.cms.hhs.gov/api/?version=2.1&limit=10`; 
 
             if (isNPI) {
                 const npi = document.getElementById('npiInput').value.trim();
-                if (!/^\d{10}$/.test(npi)) {
-                    showError("Please enter a valid 10-digit NPI.");
-                    return;
-                }
+                if (!/^\d{10}$/.test(npi)) { showError("Please enter a valid 10-digit NPI."); return; }
                 apiUrl += `&number=${npi}`;
             } else {
                 const first = document.getElementById('firstNameInput').value.trim();
                 const last = document.getElementById('lastNameInput').value.trim();
                 const state = document.getElementById('stateInput').value;
-                
-                if (!last || !state) {
-                    showError("Last Name and State are required for a name search.");
-                    return;
-                }
+                if (!last || !state) { showError("Last Name and State are required for a name search."); return; }
                 apiUrl += `&first_name=${encodeURIComponent(first)}&last_name=${encodeURIComponent(last)}&state=${state}`;
             }
 
@@ -350,7 +396,6 @@
                     showError("No matching prescribers found.");
                 }
             } catch (error) {
-                console.error("API Error:", error);
                 showError("Network error. Could not connect to the NPI registry.");
             } finally {
                 searchBtn.innerText = "Search Registry";
@@ -360,9 +405,8 @@
 
         async function createResultCard(provider) {
             let name = "Name not found";
-            if (provider.basic.organization_name) {
-                name = provider.basic.organization_name;
-            } else {
+            if (provider.basic.organization_name) { name = provider.basic.organization_name; } 
+            else {
                 const credential = provider.basic.credential ? `, ${provider.basic.credential}` : '';
                 name = `${provider.basic.first_name} ${provider.basic.last_name}${credential}`;
             }
@@ -389,7 +433,6 @@
 
             if (provider.addresses && provider.addresses.length > 0) {
                 const locations = provider.addresses.filter(addr => addr.address_purpose === "LOCATION");
-                
                 if (locations.length > 0) {
                     const primary = locations[0];
                     primaryAddress = `${primary.address_1}, ${primary.city}, ${primary.state} ${primary.postal_code.substring(0, 5)}`;
@@ -402,7 +445,6 @@
                     try {
                         const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(primaryAddress)}&format=json&limit=1`);
                         const geoData = await geoRes.json();
-                        
                         if (geoData && geoData.length > 0) {
                             let typeStr = geoData[0].type.replace(/_/g, ' ');
                             typeStr = typeStr.charAt(0).toUpperCase() + typeStr.slice(1);
@@ -415,9 +457,7 @@
                         } else {
                             locationTypeBadge = `<span class="badge-type-neutral">🏢 Unknown Type</span>`;
                         }
-                    } catch (e) {
-                        locationTypeBadge = ``; 
-                    }
+                    } catch (e) { locationTypeBadge = ``; }
 
                     if (locations.length > 1) {
                         let otherLocs = `<div style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #b2bec3;">`;
@@ -427,7 +467,6 @@
                             const ph = loc.telephone_number || "N/A";
                             const fx = loc.fax_number || "N/A";
                             const locMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
-                            
                             otherLocs += `
                                 <div style="margin-bottom: 8px;">
                                     <div><strong>Loc ${i+1}:</strong> ${addr} <a href="${locMapUrl}" target="_blank" class="action-link color-map">[ Map 📍 ]</a></div>
@@ -495,15 +534,18 @@
         // ---------------------------------------------------------
         // SECTION 2 LOGIC: MANUAL ADDRESS CHECK
         // ---------------------------------------------------------
+        function clearAddressForm() {
+            document.getElementById('manualAddressInput').value = '';
+            document.getElementById('manualAddressResult').style.display = 'none';
+            document.getElementById('manualAddressResult').innerHTML = '';
+        }
+
         async function checkManualAddress() {
             const addressInput = document.getElementById('manualAddressInput').value.trim();
             const resultDiv = document.getElementById('manualAddressResult');
             const btn = document.getElementById('manualAddressBtn');
 
-            if (!addressInput) {
-                alert("Please enter an address to check.");
-                return;
-            }
+            if (!addressInput) { alert("Please enter an address to check."); return; }
 
             btn.innerText = "Analyzing...";
             btn.disabled = true;
@@ -520,14 +562,11 @@
                 if (geoData && geoData.length > 0) {
                     let typeStr = geoData[0].type.replace(/_/g, ' ');
                     typeStr = typeStr.charAt(0).toUpperCase() + typeStr.slice(1);
-                    
                     const safeTypes = ['Clinic', 'Hospital', 'Doctors', 'Dentist', 'Pharmacy'];
                     const riskTypes = ['House', 'Residential', 'Apartment', 'Detached'];
-                    
                     let badgeClass = 'badge-type-neutral';
                     if (safeTypes.some(t => typeStr.includes(t))) badgeClass = 'badge-type-safe';
                     if (riskTypes.some(t => typeStr.includes(t))) badgeClass = 'badge-type-risk';
-                    
                     locationTypeBadge = `<span class="${badgeClass}">🏢 ${typeStr}</span>`;
                 } else {
                     locationTypeBadge = `<span class="badge-type-neutral">🏢 Unknown Type</span>`;
@@ -540,7 +579,6 @@
                 resultDiv.style.display = 'block';
 
             } catch (error) {
-                console.error("Address Check Error:", error);
                 alert("Failed to analyze address. Please try again.");
             } finally {
                 btn.innerText = "Analyze Address 📍";
@@ -550,40 +588,134 @@
 
 
         // ---------------------------------------------------------
-        // SECTION 3 LOGIC: GFD CHECKLIST AI PROMPT GENERATOR
+        // SECTION 3 LOGIC: DYNAMIC CHECKLIST & PROMPT GENERATOR
         // ---------------------------------------------------------
-        function generateAIPrompt() {
-            const redCheckboxes = document.querySelectorAll('#redFlagsGroup input:checked');
-            let redFlags = Array.from(redCheckboxes).map(cb => cb.value);
-            
-            const greenCheckboxes = document.querySelectorAll('#greenFlagsGroup input:checked');
-            let greenFlags = Array.from(greenCheckboxes).map(cb => cb.value);
-            
-            const context = document.getElementById('clinicalContext').value.trim();
+        
+        // Show/Hide context boxes when flags are checked
+        function toggleContext(checkbox, contextId) {
+            const contextDiv = document.getElementById(contextId);
+            if (checkbox.checked) {
+                contextDiv.style.display = 'block';
+            } else {
+                contextDiv.style.display = 'none';
+                // Clear inputs inside this context box when unchecked to prevent ghost data
+                contextDiv.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+                contextDiv.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            }
+        }
 
-            if (redFlags.length === 0) {
+        function clearChecklistForm() {
+            // Uncheck all main flags and trigger their onchange to hide context boxes
+            document.querySelectorAll('.flag-item > label > input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+                cb.dispatchEvent(new Event('change'));
+            });
+            
+            document.getElementById('clinicalContext').value = '';
+            document.getElementById('aiPromptContainer').style.display = 'none';
+            document.getElementById('promptText').innerText = '';
+        }
+
+        function generateAIPrompt() {
+            const redCheckboxes = document.querySelectorAll('.red-flag-cb:checked');
+            const greenCheckboxes = document.querySelectorAll('.green-flag-cb:checked');
+            const globalContext = document.getElementById('clinicalContext').value.trim();
+
+            if (redCheckboxes.length === 0) {
                 alert("Please select at least one Red Flag to generate a message.");
                 return;
             }
 
-            let aiPrompt = `SYSTEM INSTRUCTION: You are a clinical AI assistant. Draft an SBAR message to the prescriber under 231 characters to clear the identified red flags. Do not ask for information we already have from the green flags.\n\n`;
-            
-            aiPrompt += `RED FLAGS IDENTIFIED:\n- ${redFlags.join('\n- ')}\n\n`;
-            
-            if (greenFlags.length > 0) {
-                aiPrompt += `GREEN FLAGS ALREADY MET:\n- ${greenFlags.join('\n- ')}\n\n`;
+            let promptString = `SYSTEM INSTRUCTION: You are an expert Clinical Decision Support AI assisting a California pharmacist with a Good Faith Dispensing (eGFD) workflow.\nYour task is to review the selected Red Flags and Green Flags, and generate copy/paste notes alongside patient interview questions.\n\nIMPORTANT INSTRUCTIONS:\n1. Fax Script: Draft an SBAR message to the prescriber under 231 characters. Heavily abbreviate. Explicitly ask for what is needed to clear the RED FLAGS. Do NOT ask for information we already have from the GREEN FLAGS.\n2. Interim Note: Draft a 1-sentence note for the pharmacy queue (e.g., "eGFD pending. Fax sent to MD for X, awaiting reply.")\n3. eGFD Portal Notes: Draft a 1-2 sentence objective, Board-of-Pharmacy compliant note for EACH individual Red Flag and Green Flag identified.\n4. Patient Interview Questions: Draft 2-3 targeted, polite questions for the technician or pharmacist to ask the patient (in person or by phone) to clarify the situation and help resolve the identified Red Flags.\n\nFormat exactly with headings: "📠 FAX SCRIPT", "📝 INTERIM NOTE", "✂️ eGFD PORTAL NOTES", and "🗣️ PATIENT INTERVIEW QUESTIONS". Do not use markdown bolding (**) in your output, keep it plain text under the emojis.\n\n`;
+
+            // Gather Red Flags and their specific contexts
+            promptString += `RED FLAGS IDENTIFIED:\n`;
+            redCheckboxes.forEach(cb => {
+                let flagText = `- ${cb.value}`;
+                let details = [];
+                const contextDiv = cb.parentElement.nextElementSibling;
+                
+                if (contextDiv) {
+                    // Check for general notes
+                    const noteInput = contextDiv.querySelector('.flag-note');
+                    if (noteInput && noteInput.value.trim()) details.push(`Notes: ${noteInput.value.trim()}`);
+                    
+                    // Specific logic for T2 (Geographic)
+                    if (cb.value.includes('T2')) {
+                        if (document.getElementById('t2_susp_student').checked) details.push("Suspected Student");
+                        if (document.getElementById('t2_conf_student').checked) details.push("Confirmed Student");
+                        
+                        const mdZip = document.getElementById('t2_md_zip').value.trim();
+                        const ptZip = document.getElementById('t2_pt_zip').value.trim();
+                        if (mdZip) details.push(`MD ZIP: ${mdZip}`);
+                        if (ptZip) details.push(`Patient ZIP: ${ptZip}`);
+                    }
+                }
+                
+                if (details.length > 0) {
+                    flagText += ` (${details.join(' | ')})`;
+                }
+                promptString += `${flagText}\n`;
+            });
+            promptString += `\n`;
+
+            // Gather Green Flags and their specific contexts
+            if (greenCheckboxes.length > 0) {
+                promptString += `GREEN FLAGS ALREADY MET:\n`;
+                greenCheckboxes.forEach(cb => {
+                    let flagText = `- ${cb.value}`;
+                    const contextDiv = cb.parentElement.nextElementSibling;
+                    if (contextDiv) {
+                        const noteInput = contextDiv.querySelector('.flag-note');
+                        if (noteInput && noteInput.value.trim()) flagText += ` (Notes: ${noteInput.value.trim()})`;
+                    }
+                    promptString += `${flagText}\n`;
+                });
+                promptString += `\n`;
             } else {
-                aiPrompt += `GREEN FLAGS ALREADY MET: None.\n\n`;
+                promptString += `GREEN FLAGS ALREADY MET: None.\n\n`;
             }
 
-            if (context) {
-                aiPrompt += `CLINICAL CONTEXT FROM PHARMACIST:\n"${context}"\n\n`;
+            if (globalContext) {
+                promptString += `GENERAL CLINICAL CONTEXT:\n"${globalContext}"\n`;
             }
 
-            const outputDiv = document.getElementById('aiPromptOutput');
-            outputDiv.style.display = 'block';
-            outputDiv.innerText = "Below is the exact data string that will be sent to the AI API:\n\n" + aiPrompt;
+            document.getElementById('promptText').innerText = promptString;
+            document.getElementById('aiPromptContainer').style.display = 'block';
+            
+            const copyBtn = document.getElementById('copyPromptBtn');
+            copyBtn.innerText = "Copy Prompt 📋";
+            copyBtn.style.backgroundColor = "#2980b9";
         }
+
+        function copyToClipboard() {
+            const textToCopy = document.getElementById('promptText').innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const copyBtn = document.getElementById('copyPromptBtn');
+                copyBtn.innerText = "Copied! ✅";
+                copyBtn.style.backgroundColor = "#27ae60"; 
+                
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy Prompt 📋";
+                    copyBtn.style.backgroundColor = "#2980b9";
+                }, 2000);
+            }).catch(err => {
+                alert("Failed to copy text. Your browser may not support this feature.");
+            });
+        }
+
+        // ---------------------------------------------------------
+        // GLOBAL RESET LOGIC
+        // ---------------------------------------------------------
+        function resetEntireApp() {
+            document.getElementById('searchNPI').checked = true;
+            switchMode(); 
+            clearForm(); 
+            clearAddressForm();
+            clearChecklistForm();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
     </script>
 </body>
 </html>
