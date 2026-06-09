@@ -74,14 +74,14 @@
         .reset-all-btn:hover { background-color: #c0392b; }
         .copy-btn { background-color: #2980b9; margin-bottom: 10px; font-size: 14px; padding: 8px;}
         .copy-btn:hover { background-color: #2471a3; }
-        .util-btn { background-color: #95a5a6; font-size: 0.85em; padding: 8px; border-radius: 4px; color: white; border: none; cursor: pointer; transition: 0.2s; }
-        .util-btn:hover { background-color: #7f8c8d; }
+        .util-btn { background-color: #3498db; font-size: 0.85em; padding: 8px; border-radius: 4px; color: white; border: none; cursor: pointer; transition: 0.2s; }
+        .util-btn:hover { background-color: #2980b9; }
 
         /* Results Styling */
         #resultsContainer { margin-top: 25px; }
         .result-card {
             background-color: #e8f4f8; border-left: 5px solid #3498db;
-            border-radius: 4px; padding: 15px; margin-bottom: 15px; font-size: 0.95em;
+            border-radius: 4px; padding: 15px; margin-bottom: 15px; font-size: 0.95em; transition: 0.3s;
         }
         .result-row { margin-bottom: 6px; }
         .result-label { font-weight: 600; color: #2c3e50; }
@@ -116,6 +116,7 @@
             background-color: #f8f9fa; border-left: 3px solid #bdc3c7; border-radius: 4px;
         }
         .flag-context input[type="text"] { padding: 8px; font-size: 0.85em; margin-bottom: 6px; }
+        .zip-grid { display: flex; gap: 10px; margin-bottom: 6px; }
         .sub-checkboxes { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 8px; font-size: 0.85em; color: #2c3e50; }
         
         /* AI Output Box */
@@ -129,7 +130,7 @@
             max-height: 400px; overflow-y: auto;
         }
 
-        #geoDistanceCalc { font-size: 0.8em; color: #e67e22; font-weight: 600; margin-top: 5px; }
+        #geoDistanceCalc { font-size: 0.85em; color: #e67e22; font-weight: 600; margin-top: 5px; }
 
         @media (max-width: 600px) { .checklist-row { flex-direction: column; } }
     </style>
@@ -228,7 +229,7 @@
                 </div>
                 <div>
                     <label for="mdZip">Prescriber ZIP</label>
-                    <input type="text" id="mdZip" placeholder="Auto-fills" maxlength="5" onblur="checkGeographicAnomaly()">
+                    <input type="text" id="mdZip" placeholder="Select above" maxlength="5" onblur="checkGeographicAnomaly()">
                 </div>
             </div>
             <div id="geoDistanceCalc"></div>
@@ -258,7 +259,7 @@
             
             <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <input type="text" id="icd10Desc" placeholder="Diagnosis description will appear here..." readonly style="flex: 3; background-color: #f8f9fa; color: #34495e;">
-                <button onclick="copyICD10Desc()" id="copyIcdBtn" class="util-btn" style="flex: 1;">Copy 📋</button>
+                <button onclick="copyICD10Desc()" id="copyIcdBtn" class="util-btn" style="flex: 1; background-color: #95a5a6;">Copy 📋</button>
             </div>
         </div>
         
@@ -279,7 +280,7 @@
                 </div>
 
                 <div class="flag-item">
-                    <label><input type="checkbox" class="red-flag-cb" value="T2 (Geographic Anomaly)" onchange="toggleContext(this, 'ctx_t2')"> T2: Geographic anomaly</label>
+                    <label><input type="checkbox" class="red-flag-cb" value="T2 (Geographic Anomaly)" onchange="toggleContext(this, 'ctx_t2')"> T2: Geographic Anomaly</label>
                     <div id="ctx_t2" class="flag-context">
                         <div class="sub-checkboxes" style="margin-bottom: 8px; font-weight: bold;">
                             <label><input type="checkbox" id="t2_patient_anom"> Patient Location Anomaly</label>
@@ -383,7 +384,6 @@
             const savedZip = localStorage.getItem('gfd_pharmacy_zip');
             if(savedZip) { 
                 document.getElementById('pharmacyZip').value = savedZip; 
-                checkGeographicAnomaly();
             }
         };
 
@@ -412,32 +412,6 @@
             currentPrescriberName = "";
             currentPrescriberSpecialty = "";
             if(document.getElementById('searchNPI').checked) { document.getElementById('npiInput').focus(); }
-        }
-
-        function toggleLocations(element, event) {
-            event.preventDefault();
-            const container = element.nextElementSibling;
-            if (container.style.display === 'none') {
-                container.style.display = 'block';
-                element.innerText = '- Hide other locations';
-            } else {
-                container.style.display = 'none';
-                const count = container.children.length;
-                element.innerText = `+ Show ${count} other location(s)`;
-            }
-        }
-
-        function verifyCALicense(licenseNum, event) {
-            event.preventDefault(); 
-            navigator.clipboard.writeText(licenseNum).then(() => {
-                event.target.innerText = "Copied! Opening...";
-                setTimeout(() => {
-                    window.open('https://search.dca.ca.gov/', '_blank');
-                    event.target.innerText = "[ Verify on CA Board ↗ ]"; 
-                }, 600);
-            }).catch(err => {
-                window.open('https://search.dca.ca.gov/', '_blank');
-            });
         }
 
         async function fetchProviderData() {
@@ -505,18 +479,38 @@
             }
         }
 
+        // --- NEW: Selectable Prescriber Logic ---
+        window.selectPrescriber = function(name, specialty, zip, btnElem) {
+            currentPrescriberName = name;
+            currentPrescriberSpecialty = specialty;
+            
+            // Overwrite MD Zip in Section 3 and trigger triangulation
+            document.getElementById('mdZip').value = zip;
+            checkGeographicAnomaly();
+            
+            // Visual feedback: clear other cards, highlight selected
+            document.querySelectorAll('.result-card').forEach(c => {
+                c.style.border = 'none';
+                c.style.borderLeft = '5px solid #3498db';
+                c.style.backgroundColor = '#e8f4f8';
+            });
+            const card = btnElem.closest('.result-card');
+            if(card) {
+                card.style.border = '2px solid #27ae60';
+                card.style.borderLeft = '5px solid #27ae60';
+                card.style.backgroundColor = '#eafaf1';
+            }
+        };
+
         async function createResultCard(provider) {
             let name = "Name not found";
             if (provider.basic.organization_name) { name = provider.basic.organization_name; } 
             else {
                 const credential = provider.basic.credential ? `, ${provider.basic.credential}` : '';
-                name = `${provider.basic.first_name} ${provider.basic.last_name}${credential}`;
+                name = `Dr. ${provider.basic.first_name} ${provider.basic.last_name}${credential}`;
             }
 
-            const searchTerms = `${name} ${provider.basic.organization_name ? '' : 'doctor'} reviews`;
-            const webSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchTerms)}`;
-
-            let specialty = "Specialty not listed";
+            let specialty = "Unknown Specialty";
             let caLicense = "N/A";
             
             if (provider.taxonomies && provider.taxonomies.length > 0) {
@@ -526,59 +520,29 @@
                 if (caTax) { caLicense = caTax.license; }
             }
 
-            let primaryAddress = "Address not found";
-            let phone = "N/A";
-            let fax = "N/A";
-            let multipleLocationsHtml = "";
-            let mapLink = "";
-            let locationTypeBadge = "";
-
+            let locationsHtml = "";
+            
             if (provider.addresses && provider.addresses.length > 0) {
                 const locations = provider.addresses.filter(addr => addr.address_purpose === "LOCATION");
-                if (locations.length > 0) {
-                    const primary = locations[0];
-                    primaryAddress = `${primary.address_1}, ${primary.city}, ${primary.state} ${primary.postal_code.substring(0, 5)}`;
-                    phone = primary.telephone_number || phone;
-                    fax = primary.fax_number || fax;
+                
+                locations.forEach((loc, i) => {
+                    const addr = `${loc.address_1}, ${loc.city}, ${loc.state} ${loc.postal_code.substring(0, 5)}`;
+                    const locZip = loc.postal_code.substring(0, 5);
+                    const ph = loc.telephone_number || "N/A";
+                    const fx = loc.fax_number || "N/A";
+                    const mapUrl = `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(addr)}`;
                     
-                    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(primaryAddress)}`;
-                    mapLink = `<a href="${mapUrl}" target="_blank" class="action-link color-map">[ Map 📍 ]</a>`;
-
-                    try {
-                        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(primaryAddress)}&format=json&limit=1`);
-                        const geoData = await geoRes.json();
-                        if (geoData && geoData.length > 0) {
-                            let typeStr = geoData[0].type.replace(/_/g, ' ');
-                            typeStr = typeStr.charAt(0).toUpperCase() + typeStr.slice(1);
-                            const safeTypes = ['Clinic', 'Hospital', 'Doctors', 'Dentist', 'Pharmacy'];
-                            const riskTypes = ['House', 'Residential', 'Apartment', 'Detached'];
-                            let badgeClass = 'badge-type-neutral';
-                            if (safeTypes.some(t => typeStr.includes(t))) badgeClass = 'badge-type-safe';
-                            if (riskTypes.some(t => typeStr.includes(t))) badgeClass = 'badge-type-risk';
-                            locationTypeBadge = `<span class="${badgeClass}">🏢 ${typeStr}</span>`;
-                        } else {
-                            locationTypeBadge = `<span class="badge-type-neutral">🏢 Unknown Type</span>`;
-                        }
-                    } catch (e) { locationTypeBadge = ``; }
-
-                    if (locations.length > 1) {
-                        let otherLocs = `<div style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #b2bec3;">`;
-                        for(let i=1; i < locations.length; i++) {
-                            const loc = locations[i];
-                            const addr = `${loc.address_1}, ${loc.city}, ${loc.state} ${loc.postal_code.substring(0, 5)}`;
-                            const ph = loc.telephone_number || "N/A";
-                            const fx = loc.fax_number || "N/A";
-                            const locMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
-                            otherLocs += `
-                                <div style="margin-bottom: 8px;">
-                                    <div><strong>Loc ${i+1}:</strong> ${addr} <a href="${locMapUrl}" target="_blank" class="action-link color-map">[ Map 📍 ]</a></div>
-                                    <div style="font-size: 0.9em; color: #555;">Phone: ${ph} | Fax: ${fx}</div>
-                                </div>`;
-                        }
-                        otherLocs += `</div>`;
-                        multipleLocationsHtml = `<a href="#" onclick="toggleLocations(this, event)" style="font-size: 0.85em; color: #3498db; text-decoration: none; display: block; margin-top: 4px;">+ Show ${locations.length - 1} other location(s)</a>` + otherLocs;
-                    }
-                }
+                    locationsHtml += `
+                        <div style="margin-top: 8px; padding: 10px; background: #fff; border: 1px solid #bdc3c7; border-radius: 4px;">
+                            <strong>Loc ${i+1}:</strong> ${addr} 
+                            <a href="${mapUrl}" target="_blank" class="action-link color-map">[ Map 📍 ]</a><br>
+                            <span style="font-size: 0.9em; color: #555;">Phone: ${ph} | Fax: ${fx}</span><br>
+                            <button class="util-btn" style="margin-top: 5px;" onclick="selectPrescriber('${name.replace(/'/g, "\\'")}', '${specialty.replace(/'/g, "\\'")}', '${locZip}', this)">✓ Select This Location</button>
+                        </div>
+                    `;
+                });
+            } else {
+                locationsHtml = `<div style="font-size: 0.9em; color: #c0392b;">No locations found in NPI registry.</div>`;
             }
 
             let lastUpdated = "Unknown";
@@ -595,29 +559,19 @@
                 <div class="result-row">
                     <span class="result-label">Name:</span> ${name} 
                     <span class="badge">NPI: ${provider.number}</span>
-                    <a href="${webSearchUrl}" target="_blank" class="action-link color-search">[ Web Search 🔍 ]</a>
                 </div>
                 <div class="result-row">
                     <span class="result-label">CA License:</span> 
-                    ${caLicense !== 'N/A' ? `<span class="badge-alt">${caLicense}</span> <a href="#" class="action-link color-verify" onclick="verifyCALicense('${caLicense}', event)">[ Verify on CA Board ↗ ]</a>` : 'N/A'}
+                    ${caLicense !== 'N/A' ? `<span class="badge-alt">${caLicense}</span>` : 'N/A'}
                 </div>
                 <div class="result-row"><span class="result-label">Specialty:</span> ${specialty}</div>
                 
                 <div class="result-row" style="margin-top: 10px;">
-                    <span class="result-label">Primary Address:</span> ${locationTypeBadge} ${mapLink} <br>
-                    <span style="font-size: 0.95em;">${primaryAddress}</span>
-                    ${multipleLocationsHtml}
+                    <span class="result-label">Locations:</span>
+                    ${locationsHtml}
                 </div>
                 
-                <div class="result-row" style="margin-top: 10px;">
-                    <span class="result-label">Phone:</span> ${phone}   |   
-                    <span class="result-label">Fax:</span> ${fax}
-                </div>
-                <div class="result-row"><span class="result-label">Last Updated:</span> ${lastUpdated}</div>
-                
-                <div style="text-align: right; margin-top: 5px;">
-                    <a href="${profileUrl}" target="_blank" class="nppes-link">View Official NPPES Profile ↗</a>
-                </div>
+                <div class="result-row" style="margin-top: 10px; font-size: 0.85em;"><span class="result-label">Last Updated:</span> ${lastUpdated}</div>
             `;
             return card;
         }
@@ -654,6 +608,17 @@
                 const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressInput)}&format=json&limit=1`);
                 const geoData = await geoRes.json();
                 
+                // Attempt to extract manual ZIP to overwrite MD ZIP in Section 3
+                let manualZipMatch = addressInput.match(/\b\d{5}\b/);
+                if(!manualZipMatch && geoData.length > 0 && geoData[0].display_name) {
+                    manualZipMatch = geoData[0].display_name.match(/\b\d{5}\b/);
+                }
+                
+                if (manualZipMatch) {
+                    document.getElementById('mdZip').value = manualZipMatch[0];
+                    checkGeographicAnomaly();
+                }
+
                 if (geoData && geoData.length > 0) {
                     let typeStr = geoData[0].type.replace(/_/g, ' ');
                     typeStr = typeStr.charAt(0).toUpperCase() + typeStr.slice(1);
@@ -670,6 +635,7 @@
                 resultDiv.innerHTML = `
                     <div style="margin-bottom: 5px;"><strong>Entered Address:</strong> ${addressInput}</div>
                     <div style="margin-top: 10px;"><strong>Analysis:</strong> ${locationTypeBadge} ${mapLink}</div>
+                    ${manualZipMatch ? `<div style="margin-top: 5px; font-size: 0.85em; color: #27ae60;">✓ Extracted ZIP (${manualZipMatch[0]}) applied to Triangulation below.</div>` : ''}
                 `;
                 resultDiv.style.display = 'block';
 
@@ -711,7 +677,7 @@
             const geoText = document.getElementById('geoDistanceCalc');
 
             if (!pharmZip || pharmZip.length !== 5) {
-                geoText.innerText = "Enter Pharmacy ZIP to enable distance calculation.";
+                geoText.innerText = "Enter Pharmacy ZIP to enable automatic distance calculation.";
                 return; 
             }
 
@@ -907,11 +873,11 @@
                 return;
             }
 
-            let promptString = `SYSTEM INSTRUCTION: You are an expert Clinical Decision Support AI assisting a California pharmacist with a Good Faith Dispensing (eGFD) workflow.\nYour task is to review the provided Prescription Data, Prescriber Data, Red/Green Flags, and Context to generate copy/paste notes alongside patient interview questions and clinical assessments.\n\nIMPORTANT INSTRUCTIONS:\n1. Fax Script: Draft an SBAR message to the prescriber under 231 characters. Heavily abbreviate. Explicitly ask for what is needed to clear the RED FLAGS. Do NOT ask for information we already have from the GREEN FLAGS.\n2. Interim Note: Draft a 1-sentence note for the pharmacy queue (e.g., "eGFD pending. Fax sent to MD for X, awaiting reply.")\n3. eGFD Portal Notes: Draft a 1-2 sentence objective, Board-of-Pharmacy compliant note for EACH individual Red Flag and Green Flag identified.\n4. Patient Interview Questions: Draft 2-3 targeted, polite questions for the pharmacy staff to ask the patient to clarify the situation and resolve the identified Red Flags.\n5. Clinical Alignment Check: Evaluate the Medication against the Diagnosis, Patient Age, and Prescriber Specialty. Flag geriatric/pediatric risks or out-of-scope prescribing.\n6. Geographic Triangulation: Use the provided ZIP codes to assess if the distance dynamics make logical sense for an established relationship or require further explanation.\n7. Missed Flag Detection: Review the General Pharmacist Notes. If the context suggests a Red or Green flag that wasn't checked, politely suggest it at the end.\n\nFormat exactly with headings: "📠 FAX SCRIPT", "📝 INTERIM NOTE", "✂️ eGFD PORTAL NOTES", "🗣️ PATIENT INTERVIEW QUESTIONS", "🩺 CLINICAL ALIGNMENT", "🗺️ GEOGRAPHIC ANALYSIS", and "🚨 MISSED FLAG SUGGESTIONS" (if applicable). Do not use markdown bolding (**) in your output, keep it plain text under the emojis.\n\n`;
+            let promptString = `SYSTEM INSTRUCTION: You are an expert Clinical Decision Support AI assisting a California pharmacist with a Good Faith Dispensing (eGFD) workflow.\nYour task is to review the provided Prescription Data, Prescriber Data, Red/Green Flags, and Context to generate copy/paste notes alongside patient interview questions and clinical assessments.\n\nIMPORTANT INSTRUCTIONS:\n1. Fax Script: Draft an SBAR message to the prescriber under 231 characters. Heavily abbreviate. Explicitly ask for what is needed to clear the RED FLAGS. Do NOT ask for information we already have from the GREEN FLAGS.\n2. Interim Note: Draft a 1-sentence note for the pharmacy queue (e.g., "eGFD pending. Fax sent to MD for X, awaiting reply.")\n3. eGFD Portal Notes: Draft a 1-2 sentence objective, Board-of-Pharmacy compliant note for EACH individual Red Flag and Green Flag identified.\n4. Patient Interview Questions: Draft 2-3 targeted, polite questions for the pharmacy staff to ask the patient to clarify the situation and resolve the identified Red Flags.\n5. Clinical Alignment Check: Evaluate the Medication against the Diagnosis (ICD-10 code and description) for appropriate treatment. If the diagnosis is a standard FDA-approved indication, confirm it concisely and DO NOT list off-label uses. ONLY discuss off-label indications if the provided diagnosis is actually off-label or if no diagnosis is provided. Cross-reference this with the Patient Age (e.g., pediatric/geriatric risks) and Prescriber Specialty to flag any out-of-scope prescribing.\n6. Geographic Triangulation: Use the provided ZIP codes to assess if the distance dynamics make logical sense for an established relationship or require further explanation.\n7. Missed Flag Detection: Review the General Pharmacist Notes. If the context suggests a Red or Green flag that wasn't checked, politely suggest it at the end.\n\nFormat exactly with headings: "📠 FAX SCRIPT", "📝 INTERIM NOTE", "✂️ eGFD PORTAL NOTES", "🗣️ PATIENT INTERVIEW QUESTIONS", "🩺 CLINICAL ALIGNMENT", "🗺️ GEOGRAPHIC ANALYSIS", and "🚨 MISSED FLAG SUGGESTIONS" (if applicable). Do not use markdown bolding (**) in your output, keep it plain text under the emojis.\n\n`;
 
             // Auto-imported NPI Data
             if (currentPrescriberName || currentPrescriberSpecialty) {
-                promptString += `PRESCRIBER DATA (Auto-imported from NPI Search):\n- Name: ${currentPrescriberName}\n- Specialty: ${currentPrescriberSpecialty}\n\n`;
+                promptString += `PRESCRIBER DATA (Auto-imported/Selected):\n- Name: ${currentPrescriberName}\n- Specialty: ${currentPrescriberSpecialty}\n\n`;
             }
 
             // Rx and Demographic Data
