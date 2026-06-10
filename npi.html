@@ -139,6 +139,7 @@
 
     <div class="app-container">
         <h2>Prescriber Lookup</h2>
+        <p style="font-size: 0.85em; color: #555; margin-top: -15px; margin-bottom: 15px;">Search uses Vercel rewrite routing to bypass CORS securely.</p>
         
         <div class="toggle-group">
             <input type="radio" id="searchNPI" name="searchMode" value="npi" checked onchange="switchMode()">
@@ -375,7 +376,6 @@
     </div>
 
     <script>
-        // Global variables to hold NPI Context for AI Injection
         let currentPrescriberName = "";
         let currentPrescriberSpecialty = "";
         let icd10Timeout = null;
@@ -400,7 +400,7 @@
         }
 
         // ---------------------------------------------------------
-        // SECTION 1 LOGIC: NPI / NAME SEARCH
+        // SECTION 1 LOGIC: NPI / NAME SEARCH (Vercel Rewrite)
         // ---------------------------------------------------------
         function switchMode() {
             const isNPI = document.getElementById('searchNPI').checked;
@@ -432,7 +432,8 @@
             currentPrescriberName = "";
             currentPrescriberSpecialty = "";
 
-            let apiUrl = `https://npiregistry.cms.hhs.gov/api/?version=2.1&limit=10`; 
+            // Use the relative path for the Vercel Rewrite defined in vercel.json
+            let apiUrl = `/api/npi?version=2.1&limit=10`; 
 
             if (isNPI) {
                 const npi = document.getElementById('npiInput').value.trim();
@@ -442,18 +443,20 @@
                 const first = document.getElementById('firstNameInput').value.trim();
                 const last = document.getElementById('lastNameInput').value.trim();
                 const state = document.getElementById('stateInput').value;
+                
                 if (!last || !state) { showError("Last Name and State are required for a name search."); return; }
                 
-                // Safe appendage
                 if (first) { apiUrl += `&first_name=${encodeURIComponent(first)}`; }
                 apiUrl += `&last_name=${encodeURIComponent(last)}&state=${state}`;
             }
 
-            searchBtn.innerText = "Searching... (Analyzing Locations)";
+            searchBtn.innerText = "Searching... (Using Vercel Routing)";
             searchBtn.disabled = true;
 
             try {
+                // Direct call to Vercel Endpoint (No more allorigins proxy needed)
                 const response = await fetch(apiUrl);
+                
                 if (!response.ok) {
                     throw new Error(`API returned HTTP status ${response.status}`);
                 }
@@ -483,7 +486,6 @@
                         currentPrescriberSpecialty = primaryTax ? primaryTax.desc : "Unknown Specialty";
                     }
 
-                    // Safe ZIP Code extraction
                     if (firstProv.addresses && firstProv.addresses.length > 0) {
                         const primaryLoc = firstProv.addresses.find(addr => addr.address_purpose === "LOCATION") || firstProv.addresses[0];
                         if (primaryLoc && primaryLoc.postal_code) {
@@ -501,7 +503,7 @@
                 }
             } catch (error) {
                 console.error("Fetch Error:", error);
-                showError(`Search failed: ${error.message}. (If you see "Failed to fetch", check adblockers or internet connection)`);
+                showError(`Search failed: ${error.message}. (Note: API search only works in deployed Vercel environment)`);
             } finally {
                 searchBtn.innerText = "Search Registry";
                 searchBtn.disabled = false;
@@ -564,9 +566,8 @@
                         // Validated Google Maps URL syntax
                         const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
                         
-                        // Corrected HTML quote escaping
-                        const safeName = String(name).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                        const safeSpecialty = String(specialty).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        const safeName = String(name).replace(/'/g, "\\'").replace(/"/g, '"');
+                        const safeSpecialty = String(specialty).replace(/'/g, "\\'").replace(/"/g, '"');
 
                         locationsHtml += `
                             <div style="margin-top: 8px; padding: 10px; background: #fff; border: 1px solid #bdc3c7; border-radius: 4px;">
@@ -589,6 +590,8 @@
                 const dateParts = provider.basic.last_updated.split('-');
                 lastUpdated = dateParts.length === 3 ? `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}` : provider.basic.last_updated;
             }
+
+            const profileUrl = `https://npiregistry.cms.hhs.gov/provider-view/${provider.number}`;
 
             const card = document.createElement('div');
             card.className = 'result-card';
@@ -617,6 +620,10 @@
                 </div>
                 
                 <div class="result-row" style="margin-top: 10px; font-size: 0.85em;"><span class="result-label">Last Updated:</span> ${lastUpdated}</div>
+                
+                <div style="text-align: right; margin-top: 5px;">
+                    <a href="${profileUrl}" target="_blank" class="nppes-link">View Official NPPES Profile ↗</a>
+                </div>
             `;
             return card;
         }
@@ -810,6 +817,7 @@
             descField.style.backgroundColor = '#e8f4f8';
 
             try {
+                // NIH endpoint natively supports CORS, so direct fetch works fine here
                 const response = await fetch(`https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search?sf=code,name&terms=${encodeURIComponent(codeInput)}`);
                 const data = await response.json();
                 
