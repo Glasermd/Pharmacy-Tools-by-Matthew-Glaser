@@ -380,6 +380,13 @@
         let currentPrescriberSpecialty = "";
         let icd10Timeout = null;
 
+        // 1. ADDED: MISSING FUNCTION to handle UI error messages
+        function showError(msg) {
+            const errDiv = document.getElementById('errorMessage');
+            errDiv.innerHTML = msg;
+            errDiv.style.display = 'block';
+        }
+
         window.onload = function() {
             const savedZip = localStorage.getItem('gfd_pharmacy_zip');
             if(savedZip) { 
@@ -414,6 +421,33 @@
             if(document.getElementById('searchNPI').checked) { document.getElementById('npiInput').focus(); }
         }
 
+        function toggleLocations(element, event) {
+            event.preventDefault();
+            const container = element.nextElementSibling;
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                element.innerText = '- Hide other locations';
+            } else {
+                container.style.display = 'none';
+                const count = container.children.length;
+                element.innerText = `+ Show ${count} other location(s)`;
+            }
+        }
+
+        function verifyCALicense(licenseNum, event) {
+            event.preventDefault(); 
+            navigator.clipboard.writeText(licenseNum).then(() => {
+                event.target.innerText = "Copied! Opening...";
+                setTimeout(() => {
+                    window.open('https://search.dca.ca.gov/', '_blank');
+                    event.target.innerText = "[ Verify on CA Board ↗ ]"; 
+                }, 600);
+            }).catch(err => {
+                window.open('https://search.dca.ca.gov/', '_blank');
+            });
+        }
+
+        // 2. UPDATED: Handles API errors and empty parameters correctly
         async function fetchProviderData() {
             const isNPI = document.getElementById('searchNPI').checked;
             const resultsContainer = document.getElementById('resultsContainer');
@@ -435,12 +469,12 @@
                 const first = document.getElementById('firstNameInput').value.trim();
                 const last = document.getElementById('lastNameInput').value.trim();
                 const state = document.getElementById('stateInput').value;
+                
                 if (!last || !state) { showError("Last Name and State are required for a name search."); return; }
                 
+                // Fix: Only append first_name if it actually has a value to avoid API rejection
+                if (first) { apiUrl += `&first_name=${encodeURIComponent(first)}`; }
                 apiUrl += `&last_name=${encodeURIComponent(last)}&state=${state}`;
-                if (first) {
-                    apiUrl += `&first_name=${encodeURIComponent(first)}`; // Fixes empty first name crash
-                }
             }
 
             searchBtn.innerText = "Searching... (Analyzing Locations)";
@@ -449,6 +483,12 @@
             try {
                 const response = await fetch(apiUrl);
                 const data = await response.json();
+
+                // Fix: Catch specific API parameter errors
+                if (data.Errors) {
+                    showError(data.Errors[0].description || "Invalid search parameters.");
+                    return;
+                }
 
                 if (data.result_count > 0) {
                     const firstProv = data.results[0];
@@ -462,17 +502,16 @@
                         currentPrescriberSpecialty = primaryTax ? primaryTax.desc : "Unknown Specialty";
                     }
 
-                    // Auto-fill Prescriber ZIP for Geographic Triangulation safely
+                    // Fix: Added a null-check for postal_code before calling substring
                     if (firstProv.addresses && firstProv.addresses.length > 0) {
                         const primaryLoc = firstProv.addresses.find(addr => addr.address_purpose === "LOCATION") || firstProv.addresses[0];
-                        const zipCode = primaryLoc.postal_code ? primaryLoc.postal_code.substring(0, 5) : "";
-                        document.getElementById('mdZip').value = zipCode;
-                        checkGeographicAnomaly(); // Automatically run the distance calculation
+                        if (primaryLoc && primaryLoc.postal_code) {
+                            document.getElementById('mdZip').value = primaryLoc.postal_code.substring(0, 5);
+                            checkGeographicAnomaly(); 
+                        }
                     }
 
-                    // Highlight the first card by default if it's the only one
                     const isSingleResult = data.result_count === 1;
-
                     const cardPromises = data.results.map((provider, idx) => createResultCard(provider, idx === 0 && isSingleResult));
                     const cards = await Promise.all(cardPromises);
                     cards.forEach(card => resultsContainer.appendChild(card));
@@ -480,8 +519,8 @@
                     showError("No matching prescribers found.");
                 }
             } catch (error) {
-                console.error("NPI Search Error:", error);
-                showError("Search failed: " + (error.message || "Network error. Could not connect to the NPI registry."));
+                console.error(error);
+                showError("Network error or invalid data encountered. Please try again.");
             } finally {
                 searchBtn.innerText = "Search Registry";
                 searchBtn.disabled = false;
@@ -508,12 +547,13 @@
             }
         };
 
+        // 3. UPDATED: Fixes map URL and sanitizes quotes
         async function createResultCard(provider, isPreSelected) {
             let name = "Name not found";
             if (provider.basic.organization_name) { name = provider.basic.organization_name; } 
             else {
                 const credential = provider.basic.credential ? `, ${provider.basic.credential}` : '';
-                name = `Dr. ${provider.basic.first_name} ${provider.basic.last_name}${credential}`;
+                name = `Dr. ${provider.basic.first_name || ''} ${provider.basic.last_name || ''}${credential}`;
             }
 
             const searchTerms = `${name} ${provider.basic.organization_name ? '' : 'doctor'} reviews`;
@@ -536,18 +576,25 @@
                 
                 if (locations.length > 0) {
                     locations.forEach((loc, i) => {
-                        const locZip = loc.postal_code ? loc.postal_code.substring(0, 5) : "";
-                        const addr = `${loc.address_1}, ${loc.city}, ${loc.state} ${locZip}`;
+                        // Fix: Ensure postal_code exists before extracting it
+                        const zipCode = loc.postal_code ? loc.postal_code.substring(0, 5) : "N/A";
+                        const addr = `${loc.address_1}, ${loc.city}, ${loc.state} ${zipCode}`;
                         const ph = loc.telephone_number || "N/A";
                         const fx = loc.fax_number || "N/A";
-                        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`; // Fixed Google Maps URL
                         
+                        // Fix: Corrected typo in the Google Maps template literal
+                        const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(addr)}`;
+                        
+                        // Fix: Sanitize double quotes to prevent breaking the HTML onclick attribute
+                        const safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        const safeSpecialty = specialty.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
                         locationsHtml += `
                             <div style="margin-top: 8px; padding: 10px; background: #fff; border: 1px solid #bdc3c7; border-radius: 4px;">
                                 <strong>Loc ${i+1}:</strong> ${addr} 
                                 <a href="${mapUrl}" target="_blank" class="action-link color-map">[ Map 📍 ]</a><br>
                                 <span style="font-size: 0.9em; color: #555;">Phone: ${ph} | Fax: ${fx}</span><br>
-                                <button class="util-btn" style="margin-top: 5px;" onclick="selectPrescriber('${name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', '${specialty.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', '${locZip}', this)">✓ Select This Location</button>
+                                <button class="util-btn" style="margin-top: 5px;" onclick="selectPrescriber('${safeName}', '${safeSpecialty}', '${zipCode}', this)">✓ Select This Location</button>
                             </div>
                         `;
                     });
@@ -569,7 +616,6 @@
             const card = document.createElement('div');
             card.className = 'result-card';
             
-            // Highlight if pre-selected
             if (isPreSelected) {
                 card.style.border = '2px solid #27ae60';
                 card.style.borderLeft = '5px solid #27ae60';
@@ -580,10 +626,11 @@
                 <div class="result-row">
                     <span class="result-label">Name:</span> ${name} 
                     <span class="badge">NPI: ${provider.number}</span>
+                    <a href="${webSearchUrl}" target="_blank" class="action-link color-search">[ Web Search 🔍 ]</a>
                 </div>
                 <div class="result-row">
                     <span class="result-label">CA License:</span> 
-                    ${caLicense !== 'N/A' ? `<span class="badge-alt">${caLicense}</span>` : 'N/A'}
+                    ${caLicense !== 'N/A' ? `<span class="badge-alt">${caLicense}</span> <a href="#" class="action-link color-verify" onclick="verifyCALicense('${caLicense}', event)">[ Verify on CA Board ↗ ]</a>` : 'N/A'}
                 </div>
                 <div class="result-row"><span class="result-label">Specialty:</span> ${specialty}</div>
                 
@@ -593,13 +640,13 @@
                 </div>
                 
                 <div class="result-row" style="margin-top: 10px; font-size: 0.85em;"><span class="result-label">Last Updated:</span> ${lastUpdated}</div>
+                
+                <div style="text-align: right; margin-top: 5px;">
+                    <a href="${profileUrl}" target="_blank" class="nppes-link">View Official NPPES Profile ↗</a>
+                </div>
             `;
             return card;
         }
-
-        document.getElementById("npiInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") { fetchProviderData(); }
-        });
 
         // ---------------------------------------------------------
         // SECTION 2 LOGIC: MANUAL ADDRESS CHECK
@@ -623,7 +670,7 @@
 
             try {
                 let locationTypeBadge = "";
-                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressInput)}`;
+                const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(addressInput)}`;
                 const mapLink = `<a href="${mapUrl}" target="_blank" class="action-link color-map">[ Map 📍 ]</a>`;
 
                 const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressInput)}&format=json&limit=1`);
@@ -681,7 +728,7 @@
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 3958.8; // Earth radius in miles
+            const R = 3958.8; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
@@ -733,7 +780,6 @@
                 geoText.innerText = "";
             }
 
-            // Auto-check T2 flag if anomaly detected
             if (t2Flagged) {
                 const t2Checkbox = document.querySelector('.red-flag-cb[value="T2 (Geographic Anomaly)"]');
                 if (!t2Checkbox.checked) {
@@ -863,7 +909,6 @@
             document.getElementById('promptText').innerText = '';
         }
 
-        // HIPAA Sanitize Function
         function sanitizeText(text) {
             return text.replace(/(?<!Dr\. |Dr |Doctor )([A-Z][a-z]+ [A-Z][a-z]+)/g, "[REDACTED_NAME]");
         }
@@ -993,4 +1038,3 @@
     </script>
 </body>
 </html>
-    
