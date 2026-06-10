@@ -103,6 +103,9 @@
         
         #errorMessage { display: none; margin-top: 15px; color: #c0392b; background-color: #fdeaea; padding: 10px; border-radius: 4px; font-weight: 600; text-align: center; }
 
+        /* Saved Prescribers Container */
+        #savedPrescribersContainer { display: none; margin-top: 20px; padding: 15px; background: #fffaf0; border: 1px solid #f39c12; border-radius: 6px; }
+        
         /* Checklist & Expanding Context Styling */
         .checklist-row { display: flex; gap: 20px; }
         .checklist-column { flex: 1; }
@@ -192,6 +195,12 @@
         </div>
 
         <div id="errorMessage"></div>
+        
+        <div id="savedPrescribersContainer">
+            <h3 style="margin-top: 0; font-size: 1.05em; color: #d35400; border-bottom: 1px solid #f39c12; padding-bottom: 5px;">⭐ Saved Prescribers</h3>
+            <div id="savedPrescribersList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
         <div id="resultsContainer"></div>
 
         <hr style="border: 0; border-top: 2px dashed #ecf0f1; margin: 30px 0;">
@@ -376,6 +385,7 @@
     </div>
 
     <script>
+        // Global variables to hold NPI Context for AI Injection
         let currentPrescriberName = "";
         let currentPrescriberSpecialty = "";
         let icd10Timeout = null;
@@ -392,6 +402,7 @@
             if(savedZip) { 
                 document.getElementById('pharmacyZip').value = savedZip; 
             }
+            renderSavedPrescribers(); // Load Favorites on start
         };
 
         function savePharmacyZip() {
@@ -418,6 +429,7 @@
             document.getElementById('errorMessage').style.display = 'none';
             currentPrescriberName = "";
             currentPrescriberSpecialty = "";
+            renderSavedPrescribers(); // Reset highlights
             if(document.getElementById('searchNPI').checked) { document.getElementById('npiInput').focus(); }
         }
 
@@ -431,8 +443,13 @@
             errorMessage.style.display = 'none';
             currentPrescriberName = "";
             currentPrescriberSpecialty = "";
+            
+            // Clear highlights from saved list when new search starts
+            document.querySelectorAll('#savedPrescribersList > div').forEach(c => {
+                c.style.border = '1px solid #f39c12';
+                c.style.backgroundColor = '#fffaf0';
+            });
 
-            // Use the relative path for the Vercel Rewrite defined in vercel.json
             let apiUrl = `/api/npi?version=2.1&limit=10`; 
 
             if (isNPI) {
@@ -454,7 +471,6 @@
             searchBtn.disabled = true;
 
             try {
-                // Direct call to Vercel Endpoint (No more allorigins proxy needed)
                 const response = await fetch(apiUrl);
                 
                 if (!response.ok) {
@@ -510,6 +526,91 @@
             }
         }
 
+        // --- FAVORITES LOGIC ---
+        function renderSavedPrescribers() {
+            const saved = JSON.parse(localStorage.getItem('gfd_fav_prescribers') || '[]');
+            const container = document.getElementById('savedPrescribersContainer');
+            const list = document.getElementById('savedPrescribersList');
+            list.innerHTML = '';
+            
+            if (saved.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            saved.forEach(p => {
+                const div = document.createElement('div');
+                div.style.cssText = "display: flex; justify-content: space-between; align-items: center; background: #fffaf0; padding: 10px; border: 1px solid #f39c12; border-radius: 4px; font-size: 0.9em; transition: 0.2s;";
+                
+                const safeName = p.name.replace(/'/g, "\\'").replace(/"/g, '"');
+                const safeSpec = p.specialty.replace(/'/g, "\\'").replace(/"/g, '"');
+
+                div.innerHTML = `
+                    <div style="flex: 1;">
+                        <strong>${p.name}</strong> <span style="font-size: 0.85em; color: #555;">(${p.specialty})</span><br>
+                        <span style="color: #34495e; font-size: 0.85em;">${p.address}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-shrink: 0; margin-left: 10px;">
+                        <button class="util-btn" style="background-color: #27ae60;" onclick="selectSavedPrescriber('${safeName}', '${safeSpec}', '${p.zip}', this)">✓ Use</button>
+                        <button class="util-btn" style="background-color: #e74c3c; padding: 8px 12px;" onclick="toggleSavePrescriber('${p.npi}', '', '', '', '${p.zip}', null)">✖</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        window.toggleSavePrescriber = function(npi, name, specialty, encAddress, zip, btnElem) {
+            const address = encAddress ? decodeURIComponent(encAddress) : '';
+            let saved = JSON.parse(localStorage.getItem('gfd_fav_prescribers') || '[]');
+            
+            // Uniqueness is defined by NPI + ZIP (since one doc can have multiple clinics)
+            const existsIdx = saved.findIndex(p => p.npi === npi && p.zip === zip);
+            
+            if (existsIdx > -1) {
+                saved.splice(existsIdx, 1);
+                if(btnElem) {
+                    btnElem.innerText = '☆ Save';
+                    btnElem.style.backgroundColor = '#95a5a6';
+                }
+            } else {
+                saved.push({ npi, name, specialty, address, zip });
+                if(btnElem) {
+                    btnElem.innerText = '⭐ Saved';
+                    btnElem.style.backgroundColor = '#f39c12';
+                }
+            }
+            
+            localStorage.setItem('gfd_fav_prescribers', JSON.stringify(saved));
+            renderSavedPrescribers(); // refresh the list
+        };
+
+        window.selectSavedPrescriber = function(name, specialty, zip, btnElem) {
+            currentPrescriberName = name;
+            currentPrescriberSpecialty = specialty;
+            
+            document.getElementById('mdZip').value = zip;
+            checkGeographicAnomaly();
+            
+            // Clear all highlights
+            document.querySelectorAll('.result-card').forEach(c => {
+                c.style.border = 'none';
+                c.style.borderLeft = '5px solid #3498db';
+                c.style.backgroundColor = '#e8f4f8';
+            });
+            document.querySelectorAll('#savedPrescribersList > div').forEach(c => {
+                c.style.border = '1px solid #f39c12';
+                c.style.backgroundColor = '#fffaf0';
+            });
+            
+            // Highlight clicked saved item
+            const card = btnElem.closest('div[style*="display: flex; justify-content"]'); 
+            if(card) {
+                card.style.border = '2px solid #27ae60';
+                card.style.backgroundColor = '#eafaf1';
+            }
+        };
+
         window.selectPrescriber = function(name, specialty, zip, btnElem) {
             currentPrescriberName = name;
             currentPrescriberSpecialty = specialty;
@@ -517,11 +618,18 @@
             document.getElementById('mdZip').value = zip;
             checkGeographicAnomaly();
             
+            // Clear highlights
             document.querySelectorAll('.result-card').forEach(c => {
                 c.style.border = 'none';
                 c.style.borderLeft = '5px solid #3498db';
                 c.style.backgroundColor = '#e8f4f8';
             });
+            document.querySelectorAll('#savedPrescribersList > div').forEach(c => {
+                c.style.border = '1px solid #f39c12';
+                c.style.backgroundColor = '#fffaf0';
+            });
+
+            // Highlight selected search result
             const card = btnElem.closest('.result-card');
             if(card) {
                 card.style.border = '2px solid #27ae60';
@@ -552,6 +660,7 @@
             }
 
             let locationsHtml = "";
+            const savedFavs = JSON.parse(localStorage.getItem('gfd_fav_prescribers') || '[]');
             
             if (provider.addresses && provider.addresses.length > 0) {
                 const locations = provider.addresses.filter(addr => addr.address_purpose === "LOCATION");
@@ -562,19 +671,25 @@
                         const addr = `${loc.address_1 || ''}, ${loc.city || ''}, ${loc.state || ''} ${zipCode}`;
                         const ph = loc.telephone_number || "N/A";
                         const fx = loc.fax_number || "N/A";
-                        
-                        // Validated Google Maps URL syntax
                         const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
                         
                         const safeName = String(name).replace(/'/g, "\\'").replace(/"/g, '"');
                         const safeSpecialty = String(specialty).replace(/'/g, "\\'").replace(/"/g, '"');
+                        const encAddr = encodeURIComponent(addr);
+
+                        const isSaved = savedFavs.some(p => p.npi === provider.number && p.zip === zipCode);
+                        const starIcon = isSaved ? '⭐ Saved' : '☆ Save';
+                        const starColor = isSaved ? '#f39c12' : '#95a5a6';
 
                         locationsHtml += `
                             <div style="margin-top: 8px; padding: 10px; background: #fff; border: 1px solid #bdc3c7; border-radius: 4px;">
                                 <strong>Loc ${i+1}:</strong> ${addr} 
                                 <a href="${mapUrl}" target="_blank" class="action-link color-map">[ Map 📍 ]</a><br>
                                 <span style="font-size: 0.9em; color: #555;">Phone: ${ph} | Fax: ${fx}</span><br>
-                                <button class="util-btn" style="margin-top: 5px;" onclick="selectPrescriber('${safeName}', '${safeSpecialty}', '${zipCode}', this)">✓ Select This Location</button>
+                                <div style="display: flex; gap: 8px; margin-top: 5px;">
+                                    <button class="util-btn" onclick="selectPrescriber('${safeName}', '${safeSpecialty}', '${zipCode}', this)">✓ Select Location</button>
+                                    <button class="util-btn fav-btn" style="background-color: ${starColor};" onclick="toggleSavePrescriber('${provider.number}', '${safeName}', '${safeSpecialty}', '${encAddr}', '${zipCode}', this)">${starIcon}</button>
+                                </div>
                             </div>
                         `;
                     });
@@ -817,7 +932,6 @@
             descField.style.backgroundColor = '#e8f4f8';
 
             try {
-                // NIH endpoint natively supports CORS, so direct fetch works fine here
                 const response = await fetch(`https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search?sf=code,name&terms=${encodeURIComponent(codeInput)}`);
                 const data = await response.json();
                 
@@ -1017,6 +1131,7 @@
             clearAddressForm();
             clearPrescriptionForm();
             clearChecklistForm();
+            renderSavedPrescribers();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
