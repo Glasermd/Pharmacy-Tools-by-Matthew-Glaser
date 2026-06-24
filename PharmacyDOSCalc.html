@@ -265,10 +265,16 @@
         <select id="topicalType" onchange="triggerAutoCalc()">
             </select>
 
-        <label for="topicalSize">Total Dispensed Quantity (grams or mL):</label>
-        <input type="number" id="topicalSize" placeholder="e.g., 45" oninput="triggerAutoCalc()">
+        <label for="topicalPkgSize">Individual Package Size (grams or mL):</label>
+        <input type="number" id="topicalPkgSize" placeholder="e.g., 30" oninput="triggerAutoCalc()">
 
-        <button class="btn-calc" onclick="calculateTopical(false)">Calculate Default DOS</button>
+        <label for="topicalPkgQty">Number of Packages Dispensed:</label>
+        <input type="number" id="topicalPkgQty" value="1" oninput="triggerAutoCalc()">
+
+        <label for="topicalDailyDose">Specific Daily Dose (Optional, if directed):</label>
+        <input type="number" id="topicalDailyDose" placeholder="e.g., 2.5 (grams or mL)" oninput="triggerAutoCalc()">
+
+        <button class="btn-calc" onclick="calculateTopical(false)">Calculate DOS</button>
     </div>
 
     <div id="outputSection">
@@ -404,6 +410,8 @@
             }
 
             // Restore Specific Hardcoded Defaults
+            document.getElementById('topicalPkgQty').value = "1";
+
             document.getElementById('inhalerTotalDoses').value = "200";
             document.getElementById('inhalerPackages').value = "1";
             
@@ -797,16 +805,21 @@
 
             var dailyDose = puffsPerDose * dosesPerDay;
             var totalDosesDispensed = dosesPerPackage * packagesDispensed;
-            var dos = Math.floor(totalDosesDispensed / dailyDose);
-            var daysPerPackage = Math.floor(dosesPerPackage / dailyDose);
+            
+            // Calculate using exact decimals to prevent rounding theft
+            var exactDaysPerPackage = dosesPerPackage / dailyDose;
+            var decimalTotalDOS = totalDosesDispensed / dailyDose;
+            var dos = Math.floor(decimalTotalDOS);
 
-            var packages30 = Math.floor(30 / daysPerPackage);
+            // 30-Day Projection Math
+            var packages30 = Math.floor(30 / exactDaysPerPackage);
             if (packages30 === 0) packages30 = 1;
-            var dos30 = packages30 * daysPerPackage;
+            var dos30 = Math.floor(packages30 * exactDaysPerPackage);
 
-            var packages90 = Math.floor(90 / daysPerPackage);
+            // 90-Day Projection Math
+            var packages90 = Math.floor(90 / exactDaysPerPackage);
             if (packages90 === 0) packages90 = 1;
-            var dos90 = packages90 * daysPerPackage;
+            var dos90 = Math.floor(packages90 * exactDaysPerPackage);
 
             let strDevice = packagesDispensed === 1 ? "device" : "devices";
             let strDoseTotal = totalDosesDispensed === 1 ? "dose" : "doses";
@@ -815,8 +828,8 @@
 
             var annotation = `${packagesDispensed} ${strDevice}, each contains ${dosesPerPackage} doses = ${totalDosesDispensed} total ${strDoseTotal}\n`;
             annotation += `(${puffsPerDose} ${strPuff} per dose x ${dosesPerDay} ${strDoseDay} per day) = ${dailyDose} max doses daily\n`;
-            annotation += `${dosesPerPackage} doses per device / ${dailyDose} max doses daily = ${daysPerPackage} days per device\n`;
-            annotation += `${daysPerPackage} days per device x ${packagesDispensed} ${strDevice} = ${dos} DOS`;
+            annotation += `${dosesPerPackage} doses per device / ${dailyDose} max doses daily = ${exactDaysPerPackage.toFixed(1)} days per device\n`;
+            annotation += `${exactDaysPerPackage.toFixed(1)} days per device x ${packagesDispensed} ${strDevice} = ${dos} DOS`;
 
             let strDevice30 = packages30 === 1 ? "device" : "devices";
             let strDevice90 = packages90 === 1 ? "device" : "devices";
@@ -1018,71 +1031,74 @@
             displayOutput(true);
         }
 
-        // --- TOPICALS LOGIC ---
+       // --- TOPICALS LOGIC ---
         function calculateTopical(isAuto = false) {
             var type = document.getElementById("topicalType").value;
-            var size = parseFloat(document.getElementById("topicalSize").value);
-            var dos = 0;
-            var annotation = "";
+            var pkgSize = parseFloat(document.getElementById("topicalPkgSize").value);
+            var pkgQty = parseFloat(document.getElementById("topicalPkgQty").value);
+            var dailyDose = parseFloat(document.getElementById("topicalDailyDose").value);
 
-            if (!size) { 
-                if (!isAuto) alert("Please enter the dispensed quantity."); 
+            if (!pkgSize || !pkgQty) { 
+                if (!isAuto) alert("Please enter the package size and quantity."); 
                 clearOutput();
                 return; 
             }
 
-            if (type === "cream") {
-                if (size <= 29) dos = 7;
-                else if (size <= 44) dos = 15;
-                else if (size <= 59) dos = 20;
-                else if (size <= 99) dos = 25;
-                else dos = 30;
-                annotation = "Formulation: Cream/Ointment/Gel/Powder/Foam\nTotal Quantity: " + size + " grams\n\nPer SOP Default Matrix:\nDispense " + size + " grams = " + dos + " DOS";
-            } 
-            else if (type === "lotion") {
-                if (size <= 120) dos = 15;
-                else if (size <= 240) dos = 20;
-                else dos = 30;
-                annotation = "Formulation: Lotion/Solution/Shampoo\nTotal Quantity: " + size + " mL\n\nPer SOP Default Matrix:\nDispense " + size + " mL = " + dos + " DOS";
+            var totalSize = pkgSize * pkgQty;
+            var dos = 0;
+            var annotation = "";
+
+            // 1. Specific Daily Dose Override
+            if (dailyDose > 0) {
+                dos = Math.floor(totalSize / dailyDose);
+                annotation = `Formulation: Specific Daily Dosing Override\nTotal Dispensed: ${totalSize} (g/mL)\n\nDirections specify: ${dailyDose} (g/mL) per day\n${totalSize} / ${dailyDose} = ${dos} DOS`;
             }
-            else if (type === "exc_cabtreo") {
-                dos = Math.floor((size / 50) * 70);
-                annotation = "Product Exception: Cabtreo Gel\nPackage Size Entered: " + size + " grams\n\nPer Manufacturer & SOP exception guidelines (50g = 70 DOS):\nDispense " + size + "g = " + dos + " DOS";
-            }
-            else if (type === "exc_carac") {
-                dos = Math.floor((size / 30) * 30);
-                annotation = "Product Exception: Carac 0.5% Cream\nPackage Size Entered: " + size + " grams\n\nPer Manufacturer & SOP exception guidelines (30g = 30 DOS):\nDispense " + size + "g = " + dos + " DOS";
-            }
-            else if (type === "exc_estrace") {
-                dos = Math.floor((size / 42.5) * 90);
-                annotation = "Product Exception: Estrace Cream\nPackage Size Entered: " + size + " grams\n\nPer Manufacturer & SOP exception guidelines (42.5g = 90 DOS):\nDispense " + size + "g = " + dos + " DOS";
-            }
-            else if (type === "exc_jublia") {
-                dos = Math.floor((size / 4) * 30);
-                annotation = "Product Exception: Jublia\nPackage Size Entered: " + size + " mL\n\nPer Manufacturer & SOP exception guidelines (4mL = 30 DOS):\nDispense " + size + "mL = " + dos + " DOS";
-            }
-            else if (type === "exc_lice") {
-                dos = Math.floor((size / 60) * 7);
-                annotation = "Product Exception: Kwell / Ovide (Lindane / Malathion)\nPackage Size Entered: " + size + " mL\n\nPer Manufacturer & SOP exception guidelines (60mL = 7 DOS):\nDispense " + size + "mL = " + dos + " DOS";
-            }
-            else if (type === "exc_penlac") {
-                dos = Math.floor((size / 6.6) * 30);
-                annotation = "Product Exception: Penlac Lacquer\nPackage Size Entered: " + size + " mL\n\nPer Manufacturer & SOP exception guidelines (6.6mL = 30 DOS):\nDispense " + size + "mL = " + dos + " DOS";
-            }
-            else if (type === "exc_premarin") {
-                dos = Math.floor((size / 30) * 90);
-                annotation = "Product Exception: Premarin Cream\nPackage Size Entered: " + size + " grams\n\nPer Manufacturer & SOP exception guidelines (30g = 90 DOS):\nDispense " + size + "g = " + dos + " DOS";
-            }
-            else if (type === "exc_soolantra") {
-                dos = Math.floor((size / 45) * 45);
-                annotation = "Product Exception: Soolantra 1% Cream\nPackage Size Entered: " + size + " grams\n\nPer Manufacturer & SOP exception guidelines (45g = 45 DOS):\nDispense " + size + "g = " + dos + " DOS";
-            }
-            else if (type === "exc_voltaren") {
-                dos = Math.floor((size / 100) * 7);
-                annotation = "Product Exception: Voltaren Gel\nPackage Size Entered: " + size + " grams\n\nPer Manufacturer & SOP exception guidelines (100g = 7 DOS):\nDispense " + size + "g = " + dos + " DOS";
-            }
+            // 2. Santyl Exception
             else if (type === "exc_santyl") {
-                annotation = "Product Exception: Santyl 250U/GM Ointment\nPackage Size Entered: " + size + " grams\n\nACTION REQUIRED: Days of supply for Santyl depends explicitly on the wound width, length, and duration of therapy provided by the prescriber. \n\nPlease use the official 'Santyl Dosage Calculator' application to determine exact DOS, and annotate the image with the specific wound dimensions provided by the prescriber.";
+                annotation = `Product Exception: Santyl 250U/GM Ointment\nTotal Quantity: ${totalSize} grams\n\nACTION REQUIRED: Days of supply for Santyl depends explicitly on the wound width, length, and duration of therapy provided by the prescriber. \n\nPlease use the official 'Santyl Dosage Calculator' application to determine exact DOS, and annotate the image with the specific wound dimensions provided by the prescriber.`;
+            }
+            // 3. Default Creams/Ointments Matrix
+            else if (type === "cream") {
+                var dosPerPkg = 0;
+                if (pkgSize <= 29) dosPerPkg = 7;
+                else if (pkgSize <= 44) dosPerPkg = 15;
+                else if (pkgSize <= 59) dosPerPkg = 20;
+                else if (pkgSize <= 99) dosPerPkg = 25;
+                else dosPerPkg = 30;
+                
+                dos = dosPerPkg * pkgQty;
+                annotation = `Formulation: Cream/Ointment/Gel/Powder/Foam\nPackage Size: ${pkgSize} grams\nPackages Dispensed: ${pkgQty}\nTotal Quantity: ${totalSize} grams\n\nPer SOP Default Matrix:\n1 package (${pkgSize}g) = ${dosPerPkg} DOS\n${dosPerPkg} DOS x ${pkgQty} packages = ${dos} DOS`;
+            } 
+            // 4. Default Lotions/Solutions Matrix
+            else if (type === "lotion") {
+                var dosPerPkg = 0;
+                if (pkgSize <= 120) dosPerPkg = 15;
+                else if (pkgSize <= 240) dosPerPkg = 20;
+                else dosPerPkg = 30;
+                
+                dos = dosPerPkg * pkgQty;
+                annotation = `Formulation: Lotion/Solution/Shampoo\nPackage Size: ${pkgSize} mL\nPackages Dispensed: ${pkgQty}\nTotal Quantity: ${totalSize} mL\n\nPer SOP Default Matrix:\n1 package (${pkgSize}mL) = ${dosPerPkg} DOS\n${dosPerPkg} DOS x ${pkgQty} packages = ${dos} DOS`;
+            }
+            // 5. Specific Manufacturer Exceptions
+            else {
+                var exceptionMap = {
+                    "exc_cabtreo": { base: 50, days: 70, name: "Cabtreo Gel" },
+                    "exc_carac": { base: 30, days: 30, name: "Carac 0.5% Cream" },
+                    "exc_estrace": { base: 42.5, days: 90, name: "Estrace Cream" },
+                    "exc_jublia": { base: 4, days: 30, name: "Jublia" },
+                    "exc_lice": { base: 60, days: 7, name: "Kwell / Ovide (Lindane / Malathion)" },
+                    "exc_penlac": { base: 6.6, days: 30, name: "Penlac Lacquer" },
+                    "exc_premarin": { base: 30, days: 90, name: "Premarin Cream" },
+                    "exc_soolantra": { base: 45, days: 45, name: "Soolantra 1% Cream" },
+                    "exc_voltaren": { base: 100, days: 7, name: "Voltaren Gel" }
+                };
+
+                var exc = exceptionMap[type];
+                if (exc) {
+                    var dosPerPkg = Math.floor((pkgSize / exc.base) * exc.days);
+                    dos = dosPerPkg * pkgQty;
+                    annotation = `Product Exception: ${exc.name}\nPackage Size: ${pkgSize} (g/mL)\nPackages Dispensed: ${pkgQty}\nTotal Quantity: ${totalSize} (g/mL)\n\nPer SOP exception guidelines (${exc.base} = ${exc.days} DOS):\n1 package = ${dosPerPkg} DOS\n${dosPerPkg} DOS x ${pkgQty} packages = ${dos} DOS`;
+                }
             }
 
             document.getElementById("formulaOutput").value = annotation;
