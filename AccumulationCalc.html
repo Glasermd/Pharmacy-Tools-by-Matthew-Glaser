@@ -91,12 +91,13 @@
             border-radius: 8px;
             border: 1px solid var(--border);
             animation: fadeIn 0.2s ease-in-out;
+            transition: transform 0.3s ease; /* Smooth visual sorting */
         }
 
         .form-group {
             flex: 1;
             margin-bottom: 0;
-            position: relative; /* For tooltip positioning */
+            position: relative;
         }
 
         label {
@@ -148,11 +149,20 @@
         .mode-dose .col-standard { display: none !important; }
         .col-dose { display: flex; gap: 12px; flex: 2; }
 
+        /* Button Action Bar */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            margin-top: 8px;
+        }
+
         .btn {
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 18px;
             border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
@@ -160,6 +170,17 @@
         }
 
         .btn:hover { background-color: var(--primary-hover); }
+
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+            color: #334155;
+        }
         
         .btn-remove {
             background-color: white;
@@ -170,10 +191,6 @@
         
         .btn-remove:hover {
             background-color: #fef2f2;
-        }
-
-        .add-row-container {
-            margin-bottom: 24px;
         }
 
         .results {
@@ -283,8 +300,9 @@
     <div id="fillsContainer" class="mode-standard">
         </div>
 
-    <div class="add-row-container">
+    <div class="action-bar">
         <button class="btn" onclick="addFillRow()">+ Add Another Fill</button>
+        <button class="btn btn-secondary" onclick="resetCalculator()">⟲ Reset Fields</button>
     </div>
 
     <div class="results" id="resultsSection" style="display: none;">
@@ -338,9 +356,8 @@
 
     // Handles the mouse wheel scroll for dates
     function handleDateScroll(event, inputElement) {
-        event.preventDefault(); // This stops the page from scrolling!
+        event.preventDefault(); 
         
-        // Default to today if empty
         if (!inputElement.value) {
             inputElement.value = new Date().toISOString().split('T')[0];
             calculateAccumulation();
@@ -393,15 +410,13 @@
                 </div>
             </div>
 
-            ${rowCount > 1 ? `<button class="btn btn-remove" onclick="removeRow(${rowCount})">X</button>` : `<div style="width: 40px;"></div>`}
+            <button class="btn btn-remove" onclick="removeRow(this)">X</button>
         `;
         container.appendChild(row);
 
-        // Target the dynamically created date input and tooltip
         const dateInput = row.querySelector('.fill-date');
         const tooltip = row.querySelector('.tooltip');
         
-        // Add tooltip fade logic
         dateInput.parentElement.addEventListener('mouseenter', () => {
             tooltip.style.opacity = '1';
             tooltip.style.visibility = 'visible';
@@ -410,16 +425,62 @@
             }, 3000);
         });
 
-        // Add the wheel listener with { passive: false } to stop page scroll
         dateInput.addEventListener('wheel', (e) => handleDateScroll(e, dateInput), { passive: false });
     }
 
-    function removeRow(id) {
-        document.getElementById(`row-${id}`).remove();
+    function removeRow(btnElement) {
+        btnElement.closest('.fill-row').remove();
         calculateAccumulation();
     }
 
+    function resetCalculator() {
+        document.getElementById('fillsContainer').innerHTML = '';
+        document.getElementById('resultsSection').style.display = 'none';
+        rowCount = 0;
+        addFillRow();
+        addFillRow();
+    }
+
+    // Automatically visually sorts the input rows chronologically
+    function sortDOMRows() {
+        const container = document.getElementById('fillsContainer');
+        const rows = Array.from(container.querySelectorAll('.fill-row'));
+
+        let needsSort = false;
+        for (let i = 0; i < rows.length - 1; i++) {
+            const d1 = rows[i].querySelector('.fill-date').value;
+            const d2 = rows[i+1].querySelector('.fill-date').value;
+            
+            if (d1 && d2 && new Date(d1) > new Date(d2)) {
+                needsSort = true;
+                break;
+            } else if (!d1 && d2) {
+                needsSort = true; // Push empty rows to the bottom
+                break;
+            }
+        }
+
+        if (needsSort) {
+            rows.sort((a, b) => {
+                const dateA = a.querySelector('.fill-date').value;
+                const dateB = b.querySelector('.fill-date').value;
+                
+                if (!dateA && !dateB) return 0;
+                if (!dateA) return 1;
+                if (!dateB) return -1;
+                
+                return new Date(dateA) - new Date(dateB);
+            });
+            // Re-appending dynamically moves them into order naturally
+            rows.forEach(row => container.appendChild(row));
+        }
+    }
+
     function calculateAccumulation() {
+        // Step 1: Guarantee the UI input rows are visually in chronological order
+        sortDOMRows();
+
+        // Step 2: Read the sorted data
         const mode = document.querySelector('input[name="calcMode"]:checked').value;
         const rows = document.querySelectorAll('.fill-row');
         const fills = [];
@@ -449,93 +510,105 @@
         }
 
         resultsSection.style.display = 'block';
-        fills.sort((a, b) => a.date - b.date);
 
         let details = "";
         let expectedRunOutDate = null;
 
+        // STANDARD MODE MATH
         if (mode === 'standard') {
             let totalAccumulatedDays = 0;
-            expectedRunOutDate = new Date(fills[0].date);
-            expectedRunOutDate.setDate(expectedRunOutDate.getDate() + fills[0].dos);
-
+            
             details += `Fill 1: ${formatDate(fills[0].date)} (${fills[0].dos} days)\n`;
 
             for (let i = 1; i < fills.length; i++) {
                 const currentFill = fills[i];
-                details += `Fill ${i + 1}: ${formatDate(currentFill.date)} (${currentFill.dos} days) `;
+                const prevFill = fills[i - 1];
+
+                // Calculate the runout date of ONLY the immediate previous fill
+                const prevRunout = new Date(prevFill.date);
+                prevRunout.setDate(prevRunout.getDate() + prevFill.dos);
+
+                // Use UTC math to strictly compare the days to avoid Daylight Saving Time bugs
+                const utcPrevRunout = Date.UTC(prevRunout.getFullYear(), prevRunout.getMonth(), prevRunout.getDate());
+                const utcCurrentDate = Date.UTC(currentFill.date.getFullYear(), currentFill.date.getMonth(), currentFill.date.getDate());
                 
-                if (currentFill.date < expectedRunOutDate) {
-                    const diffTime = expectedRunOutDate.getTime() - currentFill.date.getTime();
-                    const daysEarly = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    totalAccumulatedDays += daysEarly;
-                    
-                    expectedRunOutDate = new Date(currentFill.date);
-                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentFill.dos + totalAccumulatedDays);
-                    
-                    details += `-> ${daysEarly} days early\n`;
+                const daysEarly = Math.floor((utcPrevRunout - utcCurrentDate) / (1000 * 60 * 60 * 24));
+
+                totalAccumulatedDays += daysEarly;
+                
+                // Prevent negative bank if a patient goes weeks without picking up meds
+                if (totalAccumulatedDays < 0) totalAccumulatedDays = 0;
+
+                if (daysEarly > 0) {
+                    const dayStr = daysEarly === 1 ? 'day' : 'days';
+                    details += `Fill ${i + 1}: ${formatDate(currentFill.date)} (${currentFill.dos} days) -> ${daysEarly} ${dayStr} early\n`;
+                } else if (daysEarly < 0) {
+                    const lateDays = Math.abs(daysEarly);
+                    const dayStr = lateDays === 1 ? 'day' : 'days';
+                    details += `Fill ${i + 1}: ${formatDate(currentFill.date)} (${currentFill.dos} days) -> ${lateDays} ${dayStr} late\n`;
                 } else {
-                    details += `-> On time/Late\n`;
-                    expectedRunOutDate = new Date(currentFill.date);
-                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentFill.dos);
+                    details += `Fill ${i + 1}: ${formatDate(currentFill.date)} (${currentFill.dos} days) -> On time\n`;
                 }
             }
+
+            // Final Run-out Date = The Last Fill's raw run-out + whatever total buffer they brought into it
+            const lastFill = fills[fills.length - 1];
+            expectedRunOutDate = new Date(lastFill.date);
+            expectedRunOutDate.setDate(expectedRunOutDate.getDate() + lastFill.dos + totalAccumulatedDays);
 
             details += `\nTotal Accumulated Buffer: ${totalAccumulatedDays} days on hand\n`;
             details += `Adjusted Target Run-out Date: ${formatDate(expectedRunOutDate)}`;
 
         } 
+        // DOSE CHANGE MODE MATH
         else {
             let totalAccumulatedUnits = 0;
             let currentDose = fills[0].dose;
-            let currentDos = Math.floor(fills[0].qty / currentDose); 
-            
-            expectedRunOutDate = new Date(fills[0].date);
-            expectedRunOutDate.setDate(expectedRunOutDate.getDate() + currentDos);
+            let firstDos = Math.floor(fills[0].qty / currentDose); 
 
-            details += `Fill 1: ${formatDate(fills[0].date)} (Qty: ${fills[0].qty}, Dose: ${currentDose}/day) -> ${currentDos} days\n`;
+            details += `Fill 1: ${formatDate(fills[0].date)} (Qty: ${fills[0].qty}, Dose: ${currentDose}/day) -> ${firstDos} days\n`;
 
             for (let i = 1; i < fills.length; i++) {
                 const currentFill = fills[i];
-                details += `Fill ${i + 1}: ${formatDate(currentFill.date)} (Qty: ${currentFill.qty}, Dose: ${currentFill.dose}/day) `;
+                const prevFill = fills[i - 1];
+                
+                const prevDos = Math.floor(prevFill.qty / prevFill.dose);
+                const prevRunout = new Date(prevFill.date);
+                prevRunout.setDate(prevRunout.getDate() + prevDos);
 
-                if (currentFill.date < expectedRunOutDate) {
-                    const diffTime = expectedRunOutDate.getTime() - currentFill.date.getTime();
-                    const daysEarly = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    const unitsBanked = daysEarly * currentDose;
-                    totalAccumulatedUnits += unitsBanked;
+                const utcPrevRunout = Date.UTC(prevRunout.getFullYear(), prevRunout.getMonth(), prevRunout.getDate());
+                const utcCurrentDate = Date.UTC(currentFill.date.getFullYear(), currentFill.date.getMonth(), currentFill.date.getDate());
+                const daysEarly = Math.floor((utcPrevRunout - utcCurrentDate) / (1000 * 60 * 60 * 24));
 
-                    let unitsOnHand = totalAccumulatedUnits + currentFill.qty;
-                    currentDose = currentFill.dose; 
-                    
-                    let newDos = Math.floor(unitsOnHand / currentDose);
+                // Buffer is mapped in physical units to prevent math errors when doses change mid-stream
+                let unitsBanked = daysEarly * prevFill.dose;
+                totalAccumulatedUnits += unitsBanked;
+                if (totalAccumulatedUnits < 0) totalAccumulatedUnits = 0;
 
-                    expectedRunOutDate = new Date(currentFill.date);
-                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + newDos);
+                currentDose = currentFill.dose; 
+                
+                let cleanBanked = unitsBanked % 1 === 0 ? unitsBanked : unitsBanked.toFixed(1);
 
-                    let cleanBanked = unitsBanked % 1 === 0 ? unitsBanked : unitsBanked.toFixed(1);
-                    let cleanOnHand = unitsOnHand % 1 === 0 ? unitsOnHand : unitsOnHand.toFixed(1);
-
-                    details += `-> ${daysEarly} days early (${cleanBanked} units banked).\n`;
-                    details += `   Total units on hand: ${cleanOnHand}. Adjusted supply: ${newDos} days.\n`;
+                if (daysEarly > 0) {
+                    const dayStr = daysEarly === 1 ? 'day' : 'days';
+                    details += `Fill ${i + 1}: ${formatDate(currentFill.date)} (Qty: ${currentFill.qty}, Dose: ${currentFill.dose}/day) -> ${daysEarly} ${dayStr} early (${cleanBanked} units banked)\n`;
+                } else if (daysEarly < 0) {
+                    const lateDays = Math.abs(daysEarly);
+                    const dayStr = lateDays === 1 ? 'day' : 'days';
+                    details += `Fill ${i + 1}: ${formatDate(currentFill.date)} (Qty: ${currentFill.qty}, Dose: ${currentFill.dose}/day) -> ${lateDays} ${dayStr} late (0 units banked)\n`;
                 } else {
-                    details += `-> On time/Late (0 units banked).\n`;
-                    
-                    totalAccumulatedUnits = 0;
-                    currentDose = currentFill.dose;
-                    let newDos = Math.floor(currentFill.qty / currentDose);
-                    
-                    expectedRunOutDate = new Date(currentFill.date);
-                    expectedRunOutDate.setDate(expectedRunOutDate.getDate() + newDos);
-                    
-                    details += `   Adjusted supply: ${newDos} days.\n`;
+                    details += `Fill ${i + 1}: ${formatDate(currentFill.date)} (Qty: ${currentFill.qty}, Dose: ${currentFill.dose}/day) -> On time (0 units banked)\n`;
                 }
             }
 
             let equivDays = Math.floor(totalAccumulatedUnits / currentDose);
             let cleanTotalAccum = totalAccumulatedUnits % 1 === 0 ? totalAccumulatedUnits : totalAccumulatedUnits.toFixed(1);
+
+            const lastFill = fills[fills.length - 1];
+            let finalDos = Math.floor(lastFill.qty / currentDose);
+            
+            expectedRunOutDate = new Date(lastFill.date);
+            expectedRunOutDate.setDate(expectedRunOutDate.getDate() + finalDos + equivDays);
 
             details += `\nTotal Accumulated Buffer: ${cleanTotalAccum} units (equivalent to ${equivDays} days at current dose)\n`;
             details += `Adjusted Target Run-out Date: ${formatDate(expectedRunOutDate)}`;
