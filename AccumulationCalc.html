@@ -91,7 +91,7 @@
             border-radius: 8px;
             border: 1px solid var(--border);
             animation: fadeIn 0.2s ease-in-out;
-            transition: transform 0.3s ease; /* Smooth visual sorting */
+            transition: transform 0.3s ease; 
         }
 
         .form-group {
@@ -332,6 +332,8 @@
 
 <script>
     let rowCount = 0;
+    let typingTimer; // Global timer variable for debouncing
+    const doneTypingInterval = 600; // Time in milliseconds to wait before jumping/sorting
 
     function formatDate(date) {
         const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -354,13 +356,19 @@
         calculateAccumulation();
     }
 
-    // Handles the mouse wheel scroll for dates
+    // Debounced typing/scrolling function so the row doesn't jump while actively modifying
+    function handleDateTyping() {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(calculateAccumulation, doneTypingInterval);
+    }
+
+    // Handles the mouse wheel scroll for dates 
     function handleDateScroll(event, inputElement) {
-        event.preventDefault(); 
+        event.preventDefault(); // Stop the webpage from scrolling
         
         if (!inputElement.value) {
             inputElement.value = new Date().toISOString().split('T')[0];
-            calculateAccumulation();
+            handleDateTyping(); 
             return;
         }
 
@@ -369,6 +377,7 @@
 
         let currentUtc = Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate());
 
+        // Increment or Decrement based on scroll direction
         if (event.deltaY < 0) {
             currentUtc += (1000 * 60 * 60 * 24); 
         } else {
@@ -377,7 +386,9 @@
 
         const newDate = new Date(currentUtc);
         inputElement.value = newDate.toISOString().split('T')[0];
-        calculateAccumulation();
+        
+        // Use the debounce timer! Updates the value instantly, but delays the sort jump.
+        handleDateTyping();
     }
 
     function addFillRow() {
@@ -390,7 +401,7 @@
         row.innerHTML = `
             <div class="form-group">
                 <label>Dispense Date</label>
-                <input type="date" class="fill-date" onchange="calculateAccumulation()">
+                <input type="date" class="fill-date" oninput="handleDateTyping()">
                 <span class="tooltip">Scroll mouse wheel to change by day</span>
             </div>
             
@@ -425,6 +436,7 @@
             }, 3000);
         });
 
+        // Wheel listener with passive: false to block page scroll
         dateInput.addEventListener('wheel', (e) => handleDateScroll(e, dateInput), { passive: false });
     }
 
@@ -455,7 +467,7 @@
                 needsSort = true;
                 break;
             } else if (!d1 && d2) {
-                needsSort = true; // Push empty rows to the bottom
+                needsSort = true; 
                 break;
             }
         }
@@ -465,10 +477,12 @@
                 const dateA = a.querySelector('.fill-date').value;
                 const dateB = b.querySelector('.fill-date').value;
                 
+                // Keep empty dates at the bottom
                 if (!dateA && !dateB) return 0;
                 if (!dateA) return 1;
                 if (!dateB) return -1;
                 
+                // Compare by actual date
                 return new Date(dateA) - new Date(dateB);
             });
             // Re-appending dynamically moves them into order naturally
@@ -487,16 +501,20 @@
 
         rows.forEach(row => {
             const dateVal = row.querySelector('.fill-date').value;
-            if (dateVal) {
+            // Only parse if it's a full date (protects against halfway typed years jumping)
+            if (dateVal && dateVal.length === 10) {
                 const [y, m, d] = dateVal.split('-').map(Number);
-                if (mode === 'standard') {
-                    const dosVal = parseInt(row.querySelector('.fill-dos').value, 10);
-                    if (!isNaN(dosVal)) fills.push({ date: new Date(y, m - 1, d), dos: dosVal });
-                } else {
-                    const qtyVal = parseFloat(row.querySelector('.fill-qty').value);
-                    const doseVal = parseFloat(row.querySelector('.fill-dose').value);
-                    if (!isNaN(qtyVal) && !isNaN(doseVal) && doseVal > 0) {
-                        fills.push({ date: new Date(y, m - 1, d), qty: qtyVal, dose: doseVal });
+                // Ensure year makes sense to avoid calculating century 0002
+                if (y > 1900) {
+                    if (mode === 'standard') {
+                        const dosVal = parseInt(row.querySelector('.fill-dos').value, 10);
+                        if (!isNaN(dosVal)) fills.push({ date: new Date(y, m - 1, d), dos: dosVal });
+                    } else {
+                        const qtyVal = parseFloat(row.querySelector('.fill-qty').value);
+                        const doseVal = parseFloat(row.querySelector('.fill-dose').value);
+                        if (!isNaN(qtyVal) && !isNaN(doseVal) && doseVal > 0) {
+                            fills.push({ date: new Date(y, m - 1, d), qty: qtyVal, dose: doseVal });
+                        }
                     }
                 }
             }
