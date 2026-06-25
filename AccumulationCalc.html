@@ -145,6 +145,7 @@
             white-space: nowrap;
         }
 
+        /* Essential classes to toggle visibility between modes */
         .mode-standard .col-dose { display: none !important; }
         .mode-dose .col-standard { display: none !important; }
         .col-dose { display: flex; gap: 12px; flex: 2; }
@@ -309,7 +310,7 @@
     </div>
 
     <div id="fillsContainer" class="mode-standard">
-        </div>
+    </div>
 
     <div class="action-bar">
         <button class="btn" onclick="addFillRow()">+ Add Fill</button>
@@ -382,10 +383,9 @@
         if (isInitializing || isRestoring) return;
         const currentStateStr = JSON.stringify(getCurrentState());
         
-        // Only push to stack if it's actually a different state than the last save
         if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== currentStateStr) {
             undoStack.push(currentStateStr);
-            if (undoStack.length > 30) undoStack.shift(); // Keep memory clean
+            if (undoStack.length > 30) undoStack.shift(); 
             updateUndoButton();
         }
     }
@@ -407,7 +407,7 @@
     function undo() {
         if (undoStack.length === 0) return;
         
-        isRestoring = true; // Prevent saveState from firing while we rebuild
+        isRestoring = true; 
         const previousStateStr = undoStack.pop();
         const state = JSON.parse(previousStateStr);
         
@@ -431,14 +431,25 @@
             if (idNum > maxId) maxId = idNum;
             appendRowWithData(rData);
         });
-        rowCount = maxId; // Keep ID incrementing safely next time a row is added
+        rowCount = maxId; 
         
         calculateAccumulation();
         updateUndoButton();
         isRestoring = false;
     }
 
+    // Ensure the visual container class switches when changing modes manually
     function toggleMode() {
+        const mode = document.querySelector('input[name="calcMode"]:checked').value;
+        const container = document.getElementById('fillsContainer');
+        
+        if (mode === 'standard') {
+            container.classList.remove('mode-dose');
+            container.classList.add('mode-standard');
+        } else {
+            container.classList.remove('mode-standard');
+            container.classList.add('mode-dose');
+        }
         calculateAccumulation();
     }
 
@@ -493,7 +504,6 @@
         row.className = 'fill-row';
         row.id = data.id;
         
-        // Note: onmouseenter and onfocus are mapped to saveState() so the app remembers the state BEFORE you scroll/type
         row.innerHTML = `
             <div class="form-group">
                 <label>Dispense Date</label>
@@ -555,7 +565,6 @@
         calculateAccumulation();
     }
 
-    // Explicit manual sort triggered by the button
     function manualSort() {
         saveState();
         sortDOMRows();
@@ -596,8 +605,6 @@
     }
 
     function calculateAccumulation() {
-        // We removed auto-sort here to stop the UI from jumping randomly while entering data!
-
         const mode = document.querySelector('input[name="calcMode"]:checked').value;
         const rows = document.querySelectorAll('.fill-row');
         const fills = [];
@@ -623,7 +630,6 @@
 
         const resultsSection = document.getElementById('resultsSection');
         
-        // Always securely sort the calculation math chronologically in the background regardless of visual UI order
         fills.sort((a, b) => a.date - b.date);
 
         if (fills.length < 2) {
@@ -754,7 +760,7 @@
         rowCount++;
         appendRowWithData({id: `row-${rowCount}`, date: '', dos: '30', qty: '30', dose: '1'});
         isInitializing = false;
-        saveState(); // Set the baseline empty state to jump back to if needed
+        saveState(); 
     });
 </script>
 
