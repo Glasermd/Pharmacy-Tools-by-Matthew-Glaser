@@ -122,6 +122,12 @@
         .zip-grid { display: flex; gap: 10px; margin-bottom: 6px; }
         .sub-checkboxes { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 8px; font-size: 0.85em; color: #2c3e50; }
         
+        /* Dynamic Diagnosis Rows */
+        .dx-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .dx-row input.dx-code { flex: 1; }
+        .dx-row input.dx-desc { flex: 3; background-color: #f8f9fa; color: #34495e; }
+        .remove-dx-btn { background-color: #e74c3c; padding: 8px 12px; }
+
         /* AI Output Box */
         #aiPromptContainer { 
             display: none; margin-top: 20px; padding: 15px; 
@@ -133,7 +139,8 @@
             max-height: 400px; overflow-y: auto;
         }
 
-        #geoDistanceCalc { font-size: 0.85em; color: #e67e22; font-weight: 600; margin-top: 5px; }
+        #geoDistanceCalc { font-size: 0.9em; color: #2c3e50; margin-top: 8px; padding: 8px; background: #eafaf1; border-radius: 4px; display: none;}
+        .geo-total { font-weight: bold; color: #c0392b; }
 
         @media (max-width: 600px) { .checklist-row { flex-direction: column; } }
     </style>
@@ -263,14 +270,18 @@
             <input type="text" id="rxSig" placeholder="e.g., Take 1 tablet by mouth daily">
         </div>
 
-        <div class="input-row">
-            <label for="icd10Input">ICD-10 Diagnosis Code (Auto-Lookups)</label>
-            <input type="text" id="icd10Input" placeholder="e.g., F90.2" oninput="formatICD10(event)" onblur="triggerICD10Lookup()" onkeypress="handleICD10Enter(event)">
+        <div class="input-row" id="diagnosisContainer">
+            <label>ICD-10 Diagnosis Codes (Auto-Lookups)</label>
             
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <input type="text" id="icd10Desc" placeholder="Diagnosis description will appear here..." readonly style="flex: 3; background-color: #f8f9fa; color: #34495e;">
-                <button onclick="copyICD10Desc()" id="copyIcdBtn" class="util-btn" style="flex: 1; background-color: #95a5a6;">Copy 📋</button>
+            <div class="dx-row" id="dx-row-0">
+                <input type="text" class="dx-code" placeholder="e.g., F90.2" oninput="formatICD10(event)" onblur="triggerICD10Lookup(this)" onkeypress="handleICD10Enter(event, this)">
+                <input type="text" class="dx-desc" placeholder="Diagnosis description will appear here..." readonly>
             </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button class="util-btn" style="flex: 2; background-color: #2c3e50;" onclick="addDiagnosisRow()">[ + Add Another Diagnosis ]</button>
+            <button class="util-btn" style="flex: 1; background-color: #8e44ad;" id="copyAllDxBtn" onclick="copyAllDiagnoses()">Copy All Diagnoses 📋</button>
         </div>
         
         <div class="button-group">
@@ -385,12 +396,12 @@
     </div>
 
     <script>
-        // Global variables to hold NPI Context for AI Injection
         let currentPrescriberName = "";
         let currentPrescriberSpecialty = "";
-        let icd10Timeout = null;
+        
+        let icd10Timeouts = {}; 
+        let dxRowCount = 0;
 
-        // UI Error Handler
         function showError(msg) {
             const errDiv = document.getElementById('errorMessage');
             errDiv.innerHTML = msg;
@@ -402,7 +413,7 @@
             if(savedZip) { 
                 document.getElementById('pharmacyZip').value = savedZip; 
             }
-            renderSavedPrescribers(); // Load Favorites on start
+            renderSavedPrescribers();
         };
 
         function savePharmacyZip() {
@@ -429,7 +440,7 @@
             document.getElementById('errorMessage').style.display = 'none';
             currentPrescriberName = "";
             currentPrescriberSpecialty = "";
-            renderSavedPrescribers(); // Reset highlights
+            renderSavedPrescribers(); 
             if(document.getElementById('searchNPI').checked) { document.getElementById('npiInput').focus(); }
         }
 
@@ -444,7 +455,6 @@
             currentPrescriberName = "";
             currentPrescriberSpecialty = "";
             
-            // Clear highlights from saved list when new search starts
             document.querySelectorAll('#savedPrescribersList > div').forEach(c => {
                 c.style.border = '1px solid #f39c12';
                 c.style.backgroundColor = '#fffaf0';
@@ -564,7 +574,6 @@
             const address = encAddress ? decodeURIComponent(encAddress) : '';
             let saved = JSON.parse(localStorage.getItem('gfd_fav_prescribers') || '[]');
             
-            // Uniqueness is defined by NPI + ZIP (since one doc can have multiple clinics)
             const existsIdx = saved.findIndex(p => p.npi === npi && p.zip === zip);
             
             if (existsIdx > -1) {
@@ -582,7 +591,7 @@
             }
             
             localStorage.setItem('gfd_fav_prescribers', JSON.stringify(saved));
-            renderSavedPrescribers(); // refresh the list
+            renderSavedPrescribers(); 
         };
 
         window.selectSavedPrescriber = function(name, specialty, zip, btnElem) {
@@ -592,7 +601,6 @@
             document.getElementById('mdZip').value = zip;
             checkGeographicAnomaly();
             
-            // Clear all highlights
             document.querySelectorAll('.result-card').forEach(c => {
                 c.style.border = 'none';
                 c.style.borderLeft = '5px solid #3498db';
@@ -603,7 +611,6 @@
                 c.style.backgroundColor = '#fffaf0';
             });
             
-            // Highlight clicked saved item
             const card = btnElem.closest('div[style*="display: flex; justify-content"]'); 
             if(card) {
                 card.style.border = '2px solid #27ae60';
@@ -814,7 +821,7 @@
         }
 
         // ---------------------------------------------------------
-        // SECTION 3 LOGIC: PRESCRIPTION, GEOGRAPHY & DIAGNOSIS
+        // SECTION 3 LOGIC: PRESCRIPTION, GEOGRAPHY & MULTI-DIAGNOSIS
         // ---------------------------------------------------------
         
         async function getZipCoords(zip) {
@@ -842,10 +849,11 @@
             const geoText = document.getElementById('geoDistanceCalc');
 
             if (!pharmZip || pharmZip.length !== 5) {
-                geoText.innerText = "Enter Pharmacy ZIP to enable automatic distance calculation.";
+                geoText.style.display = 'none';
                 return; 
             }
 
+            geoText.style.display = 'block';
             geoText.innerText = "Calculating distances...";
             const pharmCoords = await getZipCoords(pharmZip);
             if (!pharmCoords) { geoText.innerText = "Invalid Pharmacy ZIP."; return; }
@@ -853,30 +861,40 @@
             let t2Flagged = false;
             let ptAnom = false;
             let mdAnom = false;
-            let distTexts = [];
+            
+            let dPharmPt = null;
+            let dPharmMd = null;
+            let dPtMd = null;
 
-            if (ptZip && ptZip.length === 5) {
-                const ptCoords = await getZipCoords(ptZip);
-                if (ptCoords) {
-                    const dist = calculateDistance(pharmCoords.lat, pharmCoords.lon, ptCoords.lat, ptCoords.lon);
-                    distTexts.push(`Patient: ${dist.toFixed(1)}mi`);
-                    if (dist > 50) { ptAnom = true; t2Flagged = true; }
-                }
+            const ptCoords = (ptZip && ptZip.length === 5) ? await getZipCoords(ptZip) : null;
+            const mdCoords = (mdZip && mdZip.length === 5) ? await getZipCoords(mdZip) : null;
+
+            if (ptCoords) {
+                dPharmPt = calculateDistance(pharmCoords.lat, pharmCoords.lon, ptCoords.lat, ptCoords.lon);
+                if (dPharmPt > 50) { ptAnom = true; t2Flagged = true; }
             }
 
-            if (mdZip && mdZip.length === 5) {
-                const mdCoords = await getZipCoords(mdZip);
-                if (mdCoords) {
-                    const dist = calculateDistance(pharmCoords.lat, pharmCoords.lon, mdCoords.lat, mdCoords.lon);
-                    distTexts.push(`Prescriber: ${dist.toFixed(1)}mi`);
-                    if (dist > 50) { mdAnom = true; t2Flagged = true; }
-                }
+            if (mdCoords) {
+                dPharmMd = calculateDistance(pharmCoords.lat, pharmCoords.lon, mdCoords.lat, mdCoords.lon);
+                if (dPharmMd > 50) { mdAnom = true; t2Flagged = true; }
             }
 
-            if (distTexts.length > 0) {
-                geoText.innerText = `Distance from Pharmacy -> ${distTexts.join(' | ')}`;
+            if (ptCoords && mdCoords) {
+                dPtMd = calculateDistance(ptCoords.lat, ptCoords.lon, mdCoords.lat, mdCoords.lon);
+                if (dPtMd > 30) { t2Flagged = true; } 
+            }
+
+            // Formatting the output as a Triangle
+            if (ptCoords && mdCoords) {
+                const totalDist = dPharmPt + dPtMd + dPharmMd;
+                geoText.innerHTML = `🗺️ <b>Distance Triangle:</b> Pharm ↔ Pt: <b>${dPharmPt.toFixed(1)}mi</b> | Pt ↔ MD: <b>${dPtMd.toFixed(1)}mi</b> | MD ↔ Pharm: <b>${dPharmMd.toFixed(1)}mi</b> <br><span class="geo-total">Total Round Trip: ${totalDist.toFixed(1)} miles</span>`;
+                if (totalDist > 50) { t2Flagged = true; } 
+            } else if (ptCoords) {
+                geoText.innerHTML = `🗺️ <b>Distance:</b> Pharm ↔ Pt: <b>${dPharmPt.toFixed(1)}mi</b>`;
+            } else if (mdCoords) {
+                geoText.innerHTML = `🗺️ <b>Distance:</b> Pharm ↔ MD: <b>${dPharmMd.toFixed(1)}mi</b>`;
             } else {
-                geoText.innerText = "";
+                geoText.style.display = 'none';
             }
 
             if (t2Flagged) {
@@ -890,18 +908,56 @@
             }
         }
 
+        // --- NEW: Multi-Diagnosis Engine ---
+        function addDiagnosisRow() {
+            dxRowCount++;
+            const container = document.getElementById('diagnosisContainer');
+            const newRow = document.createElement('div');
+            newRow.className = 'dx-row';
+            newRow.id = `dx-row-${dxRowCount}`;
+            
+            newRow.innerHTML = `
+                <input type="text" class="dx-code" placeholder="Code (e.g., F41.1)" oninput="formatICD10(event)" onblur="triggerICD10Lookup(this)" onkeypress="handleICD10Enter(event, this)">
+                <input type="text" class="dx-desc" placeholder="Description..." readonly>
+                <button class="util-btn remove-dx-btn" onclick="removeDiagnosisRow('${newRow.id}')">✖</button>
+            `;
+            container.appendChild(newRow);
+        }
+
+        function removeDiagnosisRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                updateGreenFlagFromDx();
+            }
+        }
+
         function clearPrescriptionForm() {
             document.getElementById('rxName').value = '';
             document.getElementById('rxStrength').value = '';
             document.getElementById('ptAge').value = '';
             document.getElementById('ptZip').value = '';
             document.getElementById('mdZip').value = '';
-            document.getElementById('geoDistanceCalc').innerText = '';
+            document.getElementById('geoDistanceCalc').style.display = 'none';
+            document.getElementById('geoDistanceCalc').innerHTML = '';
             document.getElementById('rxSig').value = '';
-            document.getElementById('icd10Input').value = '';
-            document.getElementById('icd10Desc').value = '';
-            document.getElementById('icd10Desc').style.backgroundColor = '#f8f9fa';
-            clearTimeout(icd10Timeout);
+            
+            // Reset Diagnosis Rows to just 1 empty row
+            const container = document.getElementById('diagnosisContainer');
+            container.innerHTML = `
+                <label>ICD-10 Diagnosis Codes (Auto-Lookups)</label>
+                <div class="dx-row" id="dx-row-0">
+                    <input type="text" class="dx-code" placeholder="e.g., F90.2" oninput="formatICD10(event)" onblur="triggerICD10Lookup(this)" onkeypress="handleICD10Enter(event, this)">
+                    <input type="text" class="dx-desc" placeholder="Diagnosis description will appear here..." readonly>
+                </div>
+            `;
+            dxRowCount = 0;
+            
+            // Clear timeouts
+            for (let key in icd10Timeouts) {
+                clearTimeout(icd10Timeouts[key]);
+            }
+            icd10Timeouts = {};
         }
 
         function formatICD10(event) {
@@ -911,20 +967,22 @@
             input.value = val;
         }
 
-        function handleICD10Enter(event) {
+        function handleICD10Enter(event, inputElem) {
             if (event.key === "Enter") {
                 event.preventDefault();
-                triggerICD10Lookup();
+                triggerICD10Lookup(inputElem);
             }
         }
 
-        async function triggerICD10Lookup() {
-            const codeInput = document.getElementById('icd10Input').value.trim();
-            const descField = document.getElementById('icd10Desc');
+        async function triggerICD10Lookup(inputElem) {
+            const row = inputElem.closest('.dx-row');
+            const codeInput = inputElem.value.trim();
+            const descField = row.querySelector('.dx-desc');
 
             if (!codeInput) {
                 descField.value = '';
                 descField.style.backgroundColor = '#f8f9fa';
+                updateGreenFlagFromDx();
                 return;
             }
 
@@ -940,44 +998,66 @@
                     const description = exactMatch ? exactMatch[1] : data[3][0][1];
                     descField.value = description;
                     descField.style.backgroundColor = '#eafaf1'; 
-
-                    const diagCb = document.querySelector('.green-flag-cb[value="Diagnosis Code Provided"]');
-                    if (!diagCb.checked) {
-                        diagCb.checked = true;
-                        toggleContext(diagCb, 'ctx_g2');
-                        const noteField = document.getElementById('ctx_g2').querySelector('.flag-note');
-                        if(noteField.value === '') {
-                            noteField.value = `${codeInput} - ${description}`;
-                        }
-                    }
-
+                    updateGreenFlagFromDx();
                 } else {
                     descField.value = "Code not found in database.";
                     descField.style.backgroundColor = '#fdeaea'; 
                 }
             } catch (e) {
-                descField.value = "Error connecting to ICD-10 database.";
+                descField.value = "Error connecting to database.";
                 descField.style.backgroundColor = '#fdeaea';
             }
         }
-
-        function copyICD10Desc() {
-            const descField = document.getElementById('icd10Desc');
-            const desc = descField.value;
-            const btn = document.getElementById('copyIcdBtn');
+        
+        function updateGreenFlagFromDx() {
+            const allCodes = Array.from(document.querySelectorAll('.dx-code')).map(el => el.value.trim()).filter(v => v);
+            const allDescs = Array.from(document.querySelectorAll('.dx-desc')).map(el => el.value.trim()).filter(v => v && !v.includes("Fetching") && !v.includes("not found") && !v.includes("Error"));
             
-            if (!desc || desc === "Fetching..." || desc.includes("not found") || desc.includes("Error")) {
-                return; 
+            const diagCb = document.querySelector('.green-flag-cb[value="Diagnosis Code Provided"]');
+            
+            if (allCodes.length > 0 && allDescs.length > 0) {
+                if (!diagCb.checked) {
+                    diagCb.checked = true;
+                    toggleContext(diagCb, 'ctx_g2');
+                }
+                
+                // Format notes nicely
+                let compiledNotes = [];
+                for(let i=0; i<Math.min(allCodes.length, allDescs.length); i++) {
+                    compiledNotes.push(`${allCodes[i]} - ${allDescs[i]}`);
+                }
+                const noteField = document.getElementById('ctx_g2').querySelector('.flag-note');
+                noteField.value = compiledNotes.join(' | ');
+            }
+        }
+
+        function copyAllDiagnoses() {
+            const btn = document.getElementById('copyAllDxBtn');
+            const rows = document.querySelectorAll('.dx-row');
+            let compiledText = "";
+            
+            rows.forEach(row => {
+                const code = row.querySelector('.dx-code').value.trim();
+                const desc = row.querySelector('.dx-desc').value.trim();
+                
+                if (code && desc && !desc.includes("Fetching") && !desc.includes("not found") && !desc.includes("Error")) {
+                    compiledText += `${code} - ${desc}\n`;
+                }
+            });
+            
+            if (!compiledText) {
+                alert("No valid diagnoses found to copy.");
+                return;
             }
 
-            navigator.clipboard.writeText(desc).then(() => {
+            navigator.clipboard.writeText(compiledText.trim()).then(() => {
                 const originalText = btn.innerText;
-                btn.innerText = "Copied! ✅";
+                btn.innerText = "Copied All! ✅";
                 btn.style.backgroundColor = "#27ae60"; 
                 
                 setTimeout(() => {
                     btn.innerText = originalText;
-                    btn.style.backgroundColor = "#95a5a6";
+                    btn.style.backgroundColor = "#8e44ad";
                 }, 2000);
             }).catch(err => {
                 console.error("Could not copy text: ", err);
@@ -1021,29 +1101,45 @@
             const rxName = document.getElementById('rxName').value.trim();
             const rxStrength = document.getElementById('rxStrength').value.trim();
             const rxSig = document.getElementById('rxSig').value.trim();
-            const icd10 = document.getElementById('icd10Input').value.trim();
-            const icd10Desc = document.getElementById('icd10Desc').value.trim();
             const ptAge = document.getElementById('ptAge').value.trim();
             const ptZip = document.getElementById('ptZip').value.trim();
             const mdZip = document.getElementById('mdZip').value.trim();
+
+            // Gather all active diagnoses
+            let activeDiagnoses = [];
+            document.querySelectorAll('.dx-row').forEach(row => {
+                const code = row.querySelector('.dx-code').value.trim();
+                const desc = row.querySelector('.dx-desc').value.trim();
+                if (code && desc && !desc.includes("Fetching") && !desc.includes("not found")) {
+                    activeDiagnoses.push(`${code} (${desc})`);
+                }
+            });
 
             if (redCheckboxes.length === 0) {
                 alert("Please select at least one Red Flag to generate a message.");
                 return;
             }
 
-            let promptString = `SYSTEM INSTRUCTION: You are an expert Clinical Decision Support AI assisting a California pharmacist with a Good Faith Dispensing (eGFD) workflow.\nYour task is to review the provided Prescription Data, Prescriber Data, Red/Green Flags, and Context to generate copy/paste notes alongside patient interview questions and clinical assessments.\n\nIMPORTANT INSTRUCTIONS:\n1. Fax Script: Draft an SBAR message to the prescriber under 231 characters. Heavily abbreviate. Explicitly ask for what is needed to clear the RED FLAGS. Do NOT ask for information we already have from the GREEN FLAGS.\n2. Interim Note: Draft a 1-sentence note for the pharmacy queue (e.g., "eGFD pending. Fax sent to MD for X, awaiting reply.")\n3. eGFD Portal Notes: Draft a 1-2 sentence objective, Board-of-Pharmacy compliant note for EACH individual Red Flag and Green Flag identified.\n4. Patient Interview Questions: Draft 2-3 targeted, polite questions for the pharmacy staff to ask the patient to clarify the situation and resolve the identified Red Flags.\n5. Clinical Alignment Check: Evaluate the Medication against the Diagnosis (ICD-10 code and description) for appropriate treatment. If the diagnosis is a standard FDA-approved indication, confirm it concisely and DO NOT list off-label uses. ONLY discuss off-label indications if the provided diagnosis is actually off-label or if no diagnosis is provided. Cross-reference this with the Patient Age (e.g., pediatric/geriatric risks) and Prescriber Specialty to flag any out-of-scope prescribing.\n6. Geographic Triangulation: Use the provided ZIP codes to assess if the distance dynamics make logical sense for an established relationship or require further explanation.\n7. Missed Flag Detection: Review the General Pharmacist Notes. If the context suggests a Red or Green flag that wasn't checked, politely suggest it at the end.\n\nFormat exactly with headings: "📠 FAX SCRIPT", "📝 INTERIM NOTE", "✂️ eGFD PORTAL NOTES", "🗣️ PATIENT INTERVIEW QUESTIONS", "🩺 CLINICAL ALIGNMENT", "🗺️ GEOGRAPHIC ANALYSIS", and "🚨 MISSED FLAG SUGGESTIONS" (if applicable). Do not use markdown bolding (**) in your output, keep it plain text under the emojis.\n\n`;
+            let promptString = `SYSTEM INSTRUCTION: You are an expert Clinical Decision Support AI assisting a California pharmacist with a Good Faith Dispensing (eGFD) workflow.\nYour task is to review the provided Prescription Data, Prescriber Data, Red/Green Flags, and Context to generate copy/paste notes alongside patient interview questions and clinical assessments.\n\nIMPORTANT INSTRUCTIONS:\n1. Fax Script: Draft an SBAR message to the prescriber under 231 characters. Heavily abbreviate. Explicitly ask for what is needed to clear the RED FLAGS. Do NOT ask for information we already have from the GREEN FLAGS.\n2. Interim Note: Draft a 1-sentence note for the pharmacy queue (e.g., "eGFD pending. Fax sent to MD for X, awaiting reply.")\n3. eGFD Portal Notes: Draft a 1-2 sentence objective, Board-of-Pharmacy compliant note for EACH individual Red Flag and Green Flag identified.\n4. Patient Interview Questions: Draft 2-3 targeted, polite questions for the pharmacy staff to ask the patient to clarify the situation and resolve the identified Red Flags.\n5. Clinical Alignment Check: Evaluate the Medication against ALL provided Diagnoses for appropriate treatment. If the diagnosis is a standard FDA-approved indication, confirm it concisely and DO NOT list off-label uses. ONLY discuss off-label indications if the provided diagnoses are actually off-label or if no diagnosis is provided. Cross-reference this with the Patient Age (e.g., pediatric/geriatric risks) and Prescriber Specialty to flag any out-of-scope prescribing.\n6. Geographic Triangulation: Review the Distance Triangle data. Assess if the total travel distance makes logical sense for an established relationship or if it requires further explanation. Note any suspicious routing.\n7. Missed Flag Detection: Review the General Pharmacist Notes. If the context suggests a Red or Green flag that wasn't checked, politely suggest it at the end.\n\nFormat exactly with headings: "📠 FAX SCRIPT", "📝 INTERIM NOTE", "✂️ eGFD PORTAL NOTES", "🗣️ PATIENT INTERVIEW QUESTIONS", "🩺 CLINICAL ALIGNMENT", "🗺️ GEOGRAPHIC ANALYSIS", and "🚨 MISSED FLAG SUGGESTIONS" (if applicable). Do not use markdown bolding (**) in your output, keep it plain text under the emojis.\n\n`;
 
             if (currentPrescriberName || currentPrescriberSpecialty) {
                 promptString += `PRESCRIBER DATA (Auto-imported/Selected):\n- Name: ${currentPrescriberName}\n- Specialty: ${currentPrescriberSpecialty}\n\n`;
             }
 
-            if (rxName || icd10 || ptAge || ptZip || mdZip || pharmacyZip) {
+            if (rxName || activeDiagnoses.length > 0 || ptAge || ptZip || mdZip || pharmacyZip) {
                 promptString += `PATIENT & PRESCRIPTION DATA:\n`;
                 if (ptAge) promptString += `- Patient Age: ${ptAge} years old\n`;
-                if (pharmacyZip || mdZip || ptZip) promptString += `- ZIP Codes: Pharmacy (${pharmacyZip || 'N/A'}) | Prescriber (${mdZip || 'N/A'}) | Patient (${ptZip || 'N/A'})\n`;
+                if (pharmacyZip || mdZip || ptZip) {
+                    promptString += `- ZIP Codes: Pharmacy (${pharmacyZip || 'N/A'}) | Prescriber (${mdZip || 'N/A'}) | Patient (${ptZip || 'N/A'})\n`;
+                    const geoTextStr = document.getElementById('geoDistanceCalc').innerText;
+                    if(geoTextStr && !geoTextStr.includes("Calculating")) {
+                        promptString += `  ${geoTextStr.replace(/\n/g, ' ')}\n`;
+                    }
+                }
                 if (rxName) promptString += `- Medication: ${rxName} ${rxStrength} | Sig: ${rxSig}\n`;
-                if (icd10) promptString += `- Diagnosis: ${icd10} (${icd10Desc})\n`;
+                if (activeDiagnoses.length > 0) {
+                    promptString += `- Diagnoses:\n  * ${activeDiagnoses.join('\n  * ')}\n`;
+                }
                 promptString += `\n`;
             }
 
