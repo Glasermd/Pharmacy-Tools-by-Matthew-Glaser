@@ -5,16 +5,18 @@
 
 const PHARMACY_DB = {
     insulinPens: [
-        { label: "Novolog FlexPen (U-100, 3mL) - 2U Prime / 28 Days", prime: 2, inUse: 28, unitsPerML: 100, vol: 3 },
-        { label: "Humalog KwikPen (U-100, 3mL) - 2U Prime / 28 Days", prime: 2, inUse: 28, unitsPerML: 100, vol: 3 },
-        { label: "Humalog KwikPen (U-200, 3mL) - 2U Prime / 28 Days", prime: 2, inUse: 28, unitsPerML: 200, vol: 3 },
-        { label: "Humulin 70/30 KwikPen (U-100, 3mL) - 2U Prime / 10 Days", prime: 2, inUse: 10, unitsPerML: 100, vol: 3 },
-        { label: "Lantus Solostar (U-100, 3mL) - 2U Prime / 28 Days", prime: 2, inUse: 28, unitsPerML: 100, vol: 3 },
-        { label: "Toujeo Solostar (U-300, 1.5mL) - 3U Prime / 56 Days", prime: 3, inUse: 56, unitsPerML: 300, vol: 1.5 },
-        { label: "Toujeo Max Solostar (U-300, 3mL) - 4U Prime / 56 Days", prime: 4, inUse: 56, unitsPerML: 300, vol: 3 },
-        { label: "Tresiba FlexTouch (U-100, 3mL) - 2U Prime / 56 Days", prime: 2, inUse: 56, unitsPerML: 100, vol: 3 },
-        { label: "Tresiba FlexTouch (U-200, 3mL) - 2U Prime / 56 Days", prime: 2, inUse: 56, unitsPerML: 200, vol: 3 }
+        { label: "Novolog FlexPen (U-100, 3mL) - 2U Prime / 28 Days", prime: 2, inUse: 28, unitsPerML: 100, vol: 3, freq: 3, qty: 5 },
+        { label: "Humalog KwikPen (U-100, 3mL) - 2U Prime / 28 Days", prime: 2, inUse: 28, unitsPerML: 100, vol: 3, freq: 3, qty: 5 },
+        { label: "Humalog KwikPen (U-200, 3mL) - 2U Prime / 28 Days", prime: 2, inUse: 28, unitsPerML: 200, vol: 3, freq: 3, qty: 5 },
+        { label: "Humulin 70/30 KwikPen (U-100, 3mL) - 2U Prime / 10 Days", prime: 2, inUse: 10, unitsPerML: 100, vol: 3, freq: 2, qty: 5 },
+        { label: "Humulin N KwikPen (U-100, 3mL) - 2U Prime / 14 Days", prime: 2, inUse: 14, unitsPerML: 100, vol: 3, freq: 2, qty: 5 },
+        { label: "Lantus Solostar (U-100, 3mL) - 2U Prime / 28 Days", prime: 2, inUse: 28, unitsPerML: 100, vol: 3, freq: 1, qty: 5 },
+        { label: "Toujeo Solostar (U-300, 1.5mL) - 3U Prime / 56 Days", prime: 3, inUse: 56, unitsPerML: 300, vol: 1.5, freq: 1, qty: 3 },
+        { label: "Toujeo Max Solostar (U-300, 3mL) - 4U Prime / 56 Days", prime: 4, inUse: 56, unitsPerML: 300, vol: 3, freq: 1, qty: 2 },
+        { label: "Tresiba FlexTouch (U-100, 3mL) - 2U Prime / 56 Days", prime: 2, inUse: 56, unitsPerML: 100, vol: 3, freq: 1, qty: 5 },
+        { label: "Tresiba FlexTouch (U-200, 3mL) - 2U Prime / 56 Days", prime: 2, inUse: 56, unitsPerML: 200, vol: 3, freq: 1, qty: 5 }
     ],
+
     
     insulinVials: [
         { label: "Humalog / Novolog (U-100, 10mL) - 28 Days in-use", prime: 0, inUse: 28, unitsPerML: 100, vol: 10 },
